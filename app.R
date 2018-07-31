@@ -1,5 +1,5 @@
 
-#setwd("F:\\Shiny\\UtahLake")
+#setwd("F:\\Shiny\\UtahLakeDataExplorer")
 library(lubridate)
 library(reshape2)
 library(gplots)
@@ -74,6 +74,26 @@ dim(wq_data)
 
 #Set non-detects to 1/2 detection limit
 wq_data$Result.Value[is.na(wq_data$Result.Value)]=wq_data$Detection.Quantitation.Limit.Value1[is.na(wq_data$Result.Value)]/2
+
+#Calculate N:P ratios
+np_flat=wq_data[wq_data$Parameter=="Nitrogen" | wq_data$Parameter=="Phosphate-phosphorus",]
+np_mat=dcast(np_flat, Date+Year+Month+Fraction+Depth+Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Result.Unit~Parameter, value.var="Result.Value", fun.aggregate=mean) #Handful of duplicate value uploads under different activity IDs - requires aggregation function
+np_mat$NP_mass=np_mat$Nitrogen/np_mat[,"Phosphate-phosphorus"]
+np_mat$NP_mol=np_mat$NP_mass*(30.974/14.007)
+#write.csv(file="data//np_matrix.csv",np_mat,row.names=F)
+
+#Flatten N:P ratios
+np_flat=na.omit(melt(np_mat,id.vars=c("Date","Year","Month","Fraction","Depth","Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Result.Unit"),measure.vars=c("NP_mass","NP_mol"),variable.name="Parameter",value.name="Result.Value"))
+levels(np_flat$Parameter)=c(levels(np_flat$Parameter),"N:P ratio (mass)","N:P ratio (molar)")
+np_flat$Parameter[np_flat$Parameter=="NP_mass"]="N:P ratio (mass)"
+np_flat$Parameter[np_flat$Parameter=="NP_mol"]="N:P ratio (molar)"
+
+#Append N:P ratios back to wq_dat
+wq_data=wq_data[,names(np_flat)]
+dim(wq_data)
+wq_data=rbind(wq_data,np_flat)
+dim(wq_data)
+
 
 #Create trophic data subset for TSI plots (total & surface factors only)
 trophic_data=wq_data[
@@ -337,7 +357,7 @@ server <- function(input, output){
 	})
 
 	observe({
-		reactive_objects$param_choices=unique(reactive_objects$wq_plot_data$Parameter)[order(unique(reactive_objects$wq_plot_data$Parameter))]
+		reactive_objects$param_choices=unique(reactive_objects$wq_plot_data$Parameter)[order(unique(as.character(reactive_objects$wq_plot_data$Parameter)))]
 	})
 	
 	output$chem_param1 <- renderUI({
@@ -510,13 +530,13 @@ server <- function(input, output){
 			if(dim(plot_data)[1]>0){
 				suppressWarnings(
 					lineplot.CI(Year,Result.Value,data=plot_data,x.cont=TRUE,xlim=c(input$plot_years[1],input$plot_years[2]),cex=1.5,
-						ylab=ylabel,xlab="Year",cex.lab=2,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
+						ylab=ylabel,xlab="Year",cex.lab=2,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n',main=title,cex.main=2)
 				)
 				axis(1,cex.axis=1.5,cex.lab=2)
 				
 				suppressWarnings(
 				lineplot.CI(Month,Result.Value,data=plot_data,x.cont=TRUE,xlim=c(1,12),cex=1.5,
-					ylab=ylabel,xlab="Month",cex.lab=2,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
+					ylab=ylabel,xlab="Month",cex.lab=2,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n',main=title,cex.main=2)
 				)
 				axis(1,cex.axis=1.5,cex.lab=2)
 				

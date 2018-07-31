@@ -1,10 +1,10 @@
 name: UtahLakeDataExplorer
 title:
 username:
-account: udwq
+account: utahdwq
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 359182
-bundleId: 1474193
-url: https://udwq.shinyapps.io/UtahLakeDataExplorer/
-when: 1531257077.72859
+bundleId: 1423629
+url: https://utahdwq.shinyapps.io/UtahLakeDataExplorer/
+when: 1528748434.08712
