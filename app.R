@@ -54,6 +54,15 @@ translate_params=read.csv(file="data/translate_params.csv")
 
 nla_data=read.csv(file="data/NLA2012_TrophicData.csv")
 
+phyto_data=read.csv(file="data/phytoplankton.csv")
+#phyto_data$CellperML=as.numeric(phyto_data$CellperML)
+phyto_data$Date2=as.Date(phyto_data$Date,format="%m/%d/%Y")
+phyto_data$Year=year(phyto_data$Date2)
+phyto_data$Month=month(phyto_data$Date2)
+phyto_data[phyto_data$Monitoring.Location.ID==4917310 & phyto_data$Year==2016 & phyto_data$Month==4,]
+
+
+
 #Subset wq data to final only
 wq_data=wq_data[wq_data$QACQ.Status=="Final",]
 dim(wq_data)
@@ -154,8 +163,8 @@ ui <- fluidPage(
 		tabPanel("Water chemistry",value=2),
 		tabPanel("Trophic state",value=3),
 		tabPanel("NLA comparison",value=4),
-		tabPanel("Water quality map",value=5)#,
-		#tabPanel("Lake profiles",value=6)
+		tabPanel("Water quality map",value=5),
+		tabPanel("Phytoplankton",value=6)
 	),
 
 		
@@ -184,7 +193,7 @@ ui <- fluidPage(
 
 			###Global inputs
 			conditionalPanel(
-				condition="input.tabs!=1",			
+				condition="input.tabs!=1 & input.tabs!=6",			
 				sliderInput(inputId="plot_years","Year range:",min=min(wq_data$Year),max=max(wq_data$Year),value=c(1990,max(wq_data$Year)),sep="")
 			),
 			conditionalPanel(
@@ -193,11 +202,11 @@ ui <- fluidPage(
 			),
 			
 			conditionalPanel(
-				condition="input.tabs!=1",
+				condition="input.tabs!=1 & input.tabs!=6",
 				sliderInput(inputId="plot_months","Month range:",min=min(lake_elev_data$Month),max=max(lake_elev_data$Month),value=c(min(lake_elev_data$Month),max(lake_elev_data$Month)),sep="",step=1),
 				#checkboxGroupInput("sites","Include:",choices=c("Utah Lake","Provo Bay"),selected=c("Utah Lake","Provo Bay"))
 				conditionalPanel(
-					condition="input.tabs!=5",
+					condition="input.tabs!=5 & input.tabs!=6",
 					radioButtons("sites","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3)
 				)
 			),
@@ -291,6 +300,28 @@ ui <- fluidPage(
 				#checkboxInput("wq_map_uniform_scale","Maintain uniform z-scale (for time-series comparisons)",value=FALSE),
 				actionButton("interpolate", "Interpolate", style='height:50px; padding:4px; font-size:150%',width="200px")
 			),
+			
+			###Phytoplankton tab
+			conditionalPanel(
+				condition="input.tabs==6",
+				sliderInput(inputId="phyto_plot_years","Year range:",min=min(phyto_data$Year,na.rm=T),max=max(phyto_data$Year,na.rm=T),value=c(2002,max(phyto_data$Year,na.rm=T)),sep=""),
+				sliderInput(inputId="phyto_plot_months","Month range:",min=min(phyto_data$Month,na.rm=T),max=max(phyto_data$Month,na.rm=T),value=c(min(phyto_data$Month,na.rm=T),max(phyto_data$Month,na.rm=T)),sep=""),
+				radioButtons("phyto_plot_type","Plot type:",choiceNames=c("Time series","Map"),choiceValues=c(1,2),selected=1,inline=T),
+				conditionalPanel(
+					condition="input.phyto_plot_type==1",
+					radioButtons("genus_or_division","Group taxa by:",choiceNames=c("Genus","Division"),choiceValues=c(1,2),selected=2,inline=T),
+					conditionalPanel(
+						condition="input.genus_or_division==1",
+						selectInput("genus","Genus:",choices=unique(phyto_data$Genus)[order(unique(phyto_data$Genus))])
+					),
+					conditionalPanel(
+						condition="input.genus_or_division==2",
+						selectInput("division","Algal division:",choices=unique(phyto_data$Division)[order(unique(phyto_data$Division))],selected="Cyanophyta")
+					),
+					radioButtons("abund_relabund","Abundance type:",choices=c("Abundance","Relative abundance"),selected="Relative abundance",inline=T)
+				)
+			),
+
 
 
 			###Help text
@@ -321,7 +352,12 @@ ui <- fluidPage(
 			conditionalPanel(
 				condition="input.tabs==5",
 				plotOutput(outputId = "wq_map",width="800px",height="800px")
+			),
+			conditionalPanel(
+				condition="input.tabs==6",
+				plotOutput(outputId = "phyto_output",width="800px",height="800px")
 			)
+
 		)
 		
 	)
@@ -739,15 +775,77 @@ server <- function(input, output){
 
 	})
 
-
-
 	
 	
-
 	
 	
+	#Tab 6: Phytoplankton
+	
+	#Genus/Division boxplots
+	output$phyto_output<-renderPlot({
+		phyto_plot_data=phyto_data[!is.na(phyto_data$Year) & !is.na(phyto_data$Month),]
+		phyto_plot_data=phyto_plot_data[phyto_plot_data$Year>=input$phyto_plot_years[1] & phyto_plot_data$Year<=input$phyto_plot_years[2] & phyto_plot_data$Month>=input$phyto_plot_months[1] & phyto_plot_data$Month<=input$phyto_plot_months[2],]
+		total_samp_sum=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month,data=phyto_plot_data,FUN='sum')
+		names(total_samp_sum)[names(total_samp_sum)=="CellperML"]="total_cellsML"
+		if(input$phyto_plot_type==1){
+			par(mfrow=c(2,1),mar=c(4.1,6.1,4.1,5.1))
+			if(input$genus_or_division==1){
+				phyto_plot_data=phyto_plot_data[phyto_plot_data$Genus==input$genus,]
+				agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus,data=phyto_plot_data,FUN='sum')
+				if(input$abund_relabund=="Abundance"){ylabel=paste(input$genus,"abundance (cells/mL)")}else{(ylabel=paste(input$genus,"relative abundance"))}
+					
+			}else{
+				phyto_plot_data=phyto_plot_data[phyto_plot_data$Division==input$division,]
+				agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division,data=phyto_plot_data,FUN='sum')
+				if(input$abund_relabund=="Abundance"){ylabel=paste(input$division,"abundance (cells/mL)")}else{(ylabel=paste(input$division,"relative abundance"))}
+			}
+			agg_phyto_plot_data=merge(agg_phyto_plot_data,total_samp_sum,all.y=T)
+			agg_phyto_plot_data$CellperML[is.na(agg_phyto_plot_data$CellperML)]=0
+			agg_phyto_plot_data$RA=agg_phyto_plot_data$CellperML/agg_phyto_plot_data$total_cellsML
+			if(input$abund_relabund=="Abundance"){
+				suppressWarnings(
+					lineplot.CI(Year,CellperML,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_years[1],input$phyto_plot_years[2]),cex=1.5,
+						ylab=ylabel,xlab="Year",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
+				)
+				axis(1,cex.axis=1.5,cex.lab=2)
+				suppressWarnings(
+					lineplot.CI(Month,CellperML,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_months[1],input$phyto_plot_months[2]),cex=1.5,
+						ylab=ylabel,xlab="Month",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
+				)
+				axis(1,cex.axis=1.5,cex.lab=2)
+			}else{
+				suppressWarnings(
+					lineplot.CI(Year,RA,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_years[1],input$phyto_plot_years[2]),cex=1.5,
+						ylab=ylabel,xlab="Year",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
+				)
+				axis(1,cex.axis=1.5,cex.lab=2)
+				suppressWarnings(
+					lineplot.CI(Month,RA,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_months[1],input$phyto_plot_months[2]),cex=1.5,
+						ylab=ylabel,xlab="Month",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
+				)
+				axis(1,cex.axis=1.5,cex.lab=2)
+				
+			
+			
+			
+			}
+		}
+		if(input$phyto_plot_type==2){
+			frame()
+			box()
+			text(0.5,0.5,"Tool in development",cex=4)
+		}
 
-
+	})	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
 
 
