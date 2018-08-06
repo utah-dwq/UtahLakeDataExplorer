@@ -5,6 +5,8 @@ library(reshape2)
 library(gplots)
 library(sciplot)
 library(sp)
+library(sf)
+library(leaflet)
 library(RColorBrewer)
 library(raster)
 library(rgdal)
@@ -13,6 +15,7 @@ library(mapview)
 library(Matrix)
 library(gdistance)
 library(ipdw)
+library(scales)
 
 source("functions/calcTSI.R")
 source("functions/plot3dTSI.R")
@@ -54,14 +57,20 @@ translate_params=read.csv(file="data/translate_params.csv")
 
 nla_data=read.csv(file="data/NLA2012_TrophicData.csv")
 
+ul_poly=st_read("polyrast","UtahLake_poly_wgs84")
+ul_poly=st_zm(ul_poly) #Removing 'z' coordinates for leaflet
+
+#Phytoplankton pre-processing
 phyto_data=read.csv(file="data/phytoplankton.csv")
 #phyto_data$CellperML=as.numeric(phyto_data$CellperML)
 phyto_data$Date2=as.Date(phyto_data$Date,format="%m/%d/%Y")
 phyto_data$Year=year(phyto_data$Date2)
 phyto_data$Month=month(phyto_data$Date2)
 phyto_data[phyto_data$Monitoring.Location.ID==4917310 & phyto_data$Year==2016 & phyto_data$Month==4,]
-
-
+phyto_data=phyto_data[phyto_data$SampleType!="",]
+levels(phyto_data$SampleType)=c(levels(phyto_data$SampleType),"Total phytoplankton")
+phyto_data$SampleType[phyto_data$SampleType=="Total Phytoplankton" | phyto_data$SampleType=="Total Plankton Sample"]="Total phytoplankton"
+head(phyto_data)
 
 #Subset wq data to final only
 wq_data=wq_data[wq_data$QACQ.Status=="Final",]
@@ -154,7 +163,15 @@ ui <- fluidPage(
 		zoom: 85%; /* Webkit browsers */
 		}"
 	),
-	
+	tags$style(type = "text/css", "html, body {width:100%;height:100%}",
+		".leaflet .legend i{
+		border-radius: 50%;
+		width: 10px;
+		height: 10px;
+		margin-top: 4px;
+		}
+		"
+	),
 	headerPanel( title=div(img(src="deq_dwq_logo1.png", height = 125, width = 125*2.89/1.47)),
 		windowTitle="Utah Lake data explorer"),
 	
@@ -188,6 +205,18 @@ ui <- fluidPage(
 				helpText("Select desired parameters, then click 'Interpolate' to generate the map."),
 				helpText("Numbers plotted on the map show available sample sizes at each site used for interpolation.")
 			),
+			conditionalPanel(condition="input.tabs==6 & input.phyto_plot_type==1",
+				helpText("This tool shows long-term and seasonal variation in Utah Lake phytoplankton abundances and relative abundances against year and month."),
+				helpText("HAB sample types were only analyzed for potentially harmful taxa. Total phytoplankton sample types were analyzed for all taxa present.")
+			),	
+			conditionalPanel(condition="input.tabs==6 & input.phyto_plot_type==2",
+				helpText("This tool shows abundances or relative abundances of selected phytoplankton at sampling locations over the selected years & months."),
+				helpText("Marker sizes are scaled by the average abundance or relative abundance observed at each location."),
+				helpText("Click on a marker to see the monitoring location ID and value associated with that point."),
+				helpText("HAB sample types were only analyzed for potentially harmful taxa. Total phytoplankton sample types were analyzed for all taxa present.")		
+			),
+
+			
 			#conditionalPanel(condition="input.tabs==6",helpText("Tool description.")),
 			br(),
 
@@ -301,25 +330,30 @@ ui <- fluidPage(
 				actionButton("interpolate", "Interpolate", style='height:50px; padding:4px; font-size:150%',width="200px")
 			),
 			
-			###Phytoplankton tab
+			
+			
+			
+			
+			###Phytoplankton tab - ###Need to make select inputs reactive...
 			conditionalPanel(
 				condition="input.tabs==6",
 				sliderInput(inputId="phyto_plot_years","Year range:",min=min(phyto_data$Year,na.rm=T),max=max(phyto_data$Year,na.rm=T),value=c(2002,max(phyto_data$Year,na.rm=T)),sep=""),
 				sliderInput(inputId="phyto_plot_months","Month range:",min=min(phyto_data$Month,na.rm=T),max=max(phyto_data$Month,na.rm=T),value=c(min(phyto_data$Month,na.rm=T),max(phyto_data$Month,na.rm=T)),sep=""),
+				radioButtons("phyto_samp_type","Sample type:",choices=unique(phyto_data$SampleType),selected="Total phytoplankton",inline=T),
 				radioButtons("phyto_plot_type","Plot type:",choiceNames=c("Time series","Map"),choiceValues=c(1,2),selected=1,inline=T),
-				conditionalPanel(
-					condition="input.phyto_plot_type==1",
+				#conditionalPanel(
+					#condition="input.phyto_plot_type==1",
 					radioButtons("genus_or_division","Group taxa by:",choiceNames=c("Genus","Division"),choiceValues=c(1,2),selected=2,inline=T),
 					conditionalPanel(
 						condition="input.genus_or_division==1",
-						selectInput("genus","Genus:",choices=unique(phyto_data$Genus)[order(unique(phyto_data$Genus))])
+						uiOutput("genus")
 					),
 					conditionalPanel(
 						condition="input.genus_or_division==2",
-						selectInput("division","Algal division:",choices=unique(phyto_data$Division)[order(unique(phyto_data$Division))],selected="Cyanophyta")
+						uiOutput("division")
 					),
 					radioButtons("abund_relabund","Abundance type:",choices=c("Abundance","Relative abundance"),selected="Relative abundance",inline=T)
-				)
+				#)
 			),
 
 
@@ -354,8 +388,12 @@ ui <- fluidPage(
 				plotOutput(outputId = "wq_map",width="800px",height="800px")
 			),
 			conditionalPanel(
-				condition="input.tabs==6",
+				condition="input.tabs==6 & input.phyto_plot_type==1",
 				plotOutput(outputId = "phyto_output",width="800px",height="800px")
+			),
+			conditionalPanel(
+				condition="input.tabs==6 & input.phyto_plot_type==2",
+				leafletOutput("phyto_map_output",width="800px",height="800px")
 			)
 
 		)
@@ -471,14 +509,60 @@ server <- function(input, output){
 																										 reactive_objects$wq_plot_data$Fraction==input$map_frac])
 	})
 
+	
+	observe({
+		phyto_plot_data=phyto_data[!is.na(phyto_data$Year) & !is.na(phyto_data$Month) & phyto_data$SampleType==input$phyto_samp_type,]
+		phyto_plot_data=phyto_plot_data[phyto_plot_data$Year>=input$phyto_plot_years[1] & phyto_plot_data$Year<=input$phyto_plot_years[2] & phyto_plot_data$Month>=input$phyto_plot_months[1] & phyto_plot_data$Month<=input$phyto_plot_months[2],]
+		total_samp_sum=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month,data=phyto_plot_data,FUN='sum')
+		names(total_samp_sum)[names(total_samp_sum)=="CellperML"]="total_cellsML"
+		reactive_objects$phyto_plot_data=phyto_plot_data
+		reactive_objects$genus_choices=unique(phyto_plot_data$Genus)[order(unique(as.character(phyto_plot_data$Genus)))]
+		reactive_objects$division_choices=unique(phyto_plot_data$Division)[order(unique(as.character(phyto_plot_data$Division)))]
+		reactive_objects$total_samp_sum=total_samp_sum
+	})
+	
+	observe({
+		
+		
+		req(reactive_objects$phyto_plot_data)
+		if(input$genus_or_division==1){
+			req(input$genus)
+			phyto_plot_data=reactive_objects$phyto_plot_data[reactive_objects$phyto_plot_data$Genus==input$genus,]
+			agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus,data=phyto_plot_data,FUN='sum')
+			if(input$abund_relabund=="Abundance"){ylabel=paste(input$genus,"abundance (cells/mL)")}else{(ylabel=paste(input$genus,"relative abundance"))}
+				
+		}else{
+			req(input$division)
+			phyto_plot_data=reactive_objects$phyto_plot_data[reactive_objects$phyto_plot_data$Division==input$division,]
+			agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division,data=phyto_plot_data,FUN='sum')
+			if(input$abund_relabund=="Abundance"){ylabel=paste(input$division,"abundance (cells/mL)")}else{(ylabel=paste(input$division,"relative abundance"))}
+		}
+		agg_phyto_plot_data=merge(agg_phyto_plot_data,reactive_objects$total_samp_sum,all.y=T)
+		agg_phyto_plot_data$CellperML[is.na(agg_phyto_plot_data$CellperML)]=0
+		agg_phyto_plot_data$RA=agg_phyto_plot_data$CellperML/agg_phyto_plot_data$total_cellsML
+		reactive_objects$agg_phyto_plot_data=agg_phyto_plot_data
+		reactive_objects$phyto_ylab=ylabel
+		
+		
+		
+	})
+	
+
 	output$map_reldepth <- renderUI({
 		selectInput("map_reldepth", "Sample depth:", reactive_objects$map_reldepth_choices, selected=input$map_reldepth)
 	})
 
+	output$genus <- renderUI({
+		selectInput("genus","Genus:",choices=reactive_objects$genus_choices, selected=input$genus)
+	})
+	
+	output$division <- renderUI({
+		selectInput("division","Algal division:",choices=reactive_objects$division_choices, selected=input$division)
+	})
 	
 	
 	
-	
+	selectInput("genus","Genus:",choices=unique(phyto_data$Genus)[order(unique(phyto_data$Genus))],selected="Dolichospermum")
 	
 	
 	#Tab 1: Elevation plot outputs
@@ -783,25 +867,11 @@ server <- function(input, output){
 	
 	#Genus/Division boxplots
 	output$phyto_output<-renderPlot({
-		phyto_plot_data=phyto_data[!is.na(phyto_data$Year) & !is.na(phyto_data$Month),]
-		phyto_plot_data=phyto_plot_data[phyto_plot_data$Year>=input$phyto_plot_years[1] & phyto_plot_data$Year<=input$phyto_plot_years[2] & phyto_plot_data$Month>=input$phyto_plot_months[1] & phyto_plot_data$Month<=input$phyto_plot_months[2],]
-		total_samp_sum=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month,data=phyto_plot_data,FUN='sum')
-		names(total_samp_sum)[names(total_samp_sum)=="CellperML"]="total_cellsML"
+		req(reactive_objects$agg_phyto_plot_data)
+		agg_phyto_plot_data=reactive_objects$agg_phyto_plot_data
+		ylabel=reactive_objects$phyto_ylab
+		par(mfrow=c(2,1),mar=c(4.1,6.1,4.1,5.1))
 		if(input$phyto_plot_type==1){
-			par(mfrow=c(2,1),mar=c(4.1,6.1,4.1,5.1))
-			if(input$genus_or_division==1){
-				phyto_plot_data=phyto_plot_data[phyto_plot_data$Genus==input$genus,]
-				agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus,data=phyto_plot_data,FUN='sum')
-				if(input$abund_relabund=="Abundance"){ylabel=paste(input$genus,"abundance (cells/mL)")}else{(ylabel=paste(input$genus,"relative abundance"))}
-					
-			}else{
-				phyto_plot_data=phyto_plot_data[phyto_plot_data$Division==input$division,]
-				agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division,data=phyto_plot_data,FUN='sum')
-				if(input$abund_relabund=="Abundance"){ylabel=paste(input$division,"abundance (cells/mL)")}else{(ylabel=paste(input$division,"relative abundance"))}
-			}
-			agg_phyto_plot_data=merge(agg_phyto_plot_data,total_samp_sum,all.y=T)
-			agg_phyto_plot_data$CellperML[is.na(agg_phyto_plot_data$CellperML)]=0
-			agg_phyto_plot_data$RA=agg_phyto_plot_data$CellperML/agg_phyto_plot_data$total_cellsML
 			if(input$abund_relabund=="Abundance"){
 				suppressWarnings(
 					lineplot.CI(Year,CellperML,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_years[1],input$phyto_plot_years[2]),cex=1.5,
@@ -824,19 +894,63 @@ server <- function(input, output){
 						ylab=ylabel,xlab="Month",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
 				)
 				axis(1,cex.axis=1.5,cex.lab=2)
-				
-			
-			
-			
 			}
 		}
-		if(input$phyto_plot_type==2){
-			frame()
-			box()
-			text(0.5,0.5,"Tool in development",cex=4)
+	})
+		
+		
+	output$phyto_map_output <- renderLeaflet({
+		req(reactive_objects$agg_phyto_plot_data)
+		agg_phyto_plot_data=reactive_objects$agg_phyto_plot_data
+		
+		addLegendCustom <- function(map, colors, labels, sizes, opacity = 0.5){ ###From: https://stackoverflow.com/questions/37446283/creating-legend-with-circles-leaflet-r
+			colorAdditions <- paste0(colors, "; width:", sizes, "px; height:", sizes, "px")
+			labelAdditions <- paste0("<div class = 'legendCircle' style='display: inline-block;height: ", sizes, "px;margin-top: 4px;line-height: ", sizes, "px;'>", labels, "</div>")
+			return(addLegend(map, title = legend_title, colors = colorAdditions, labels = labelAdditions))
 		}
+		
+		if(input$genus_or_division==1){legend_title_gd=input$genus}else{legend_title_gd=input$division}
+		if(input$abund_relabund=="Abundance"){
+			agg_phyto_plot_data_site=aggregate(CellperML~Monitoring.Location.ID,agg_phyto_plot_data,FUN='mean')
+			legend_title=paste(legend_title_gd,"abundance (cells/mL)")
+		}else{
+			agg_phyto_plot_data_site=aggregate(RA~Monitoring.Location.ID,agg_phyto_plot_data,FUN='mean')
+			legend_title=paste(legend_title_gd,"relative abundance")
+		}
+		names(agg_phyto_plot_data_site)[2]="z_val"
+		sites=unique(agg_phyto_plot_data[,c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude")])
+		agg_phyto_plot_data_site=merge(agg_phyto_plot_data_site,sites)
+		agg_phyto_plot_data_site$size=rescale(agg_phyto_plot_data_site$z_val,c(0.1,0.5))
+		agg_phyto_plot_data_site$radius=agg_phyto_plot_data_site$size*75
+		phyto_points=st_as_sf(agg_phyto_plot_data_site, coords = c("Monitoring.Location.Longitude", "Monitoring.Location.Latitude"), crs = 4326, remove=FALSE) # crs 4326 is WGS84
+		legend_labs=c(min(agg_phyto_plot_data_site$z_val),quantile(agg_phyto_plot_data_site$z_val,0.25),quantile(agg_phyto_plot_data_site$z_val,0.5),quantile(agg_phyto_plot_data_site$z_val,0.75),max(agg_phyto_plot_data_site$z_val))
+		legend_labs=signif(legend_labs,2)
+		legend_sizes=c(min(agg_phyto_plot_data_site$radius),quantile(agg_phyto_plot_data_site$radius,0.25),quantile(agg_phyto_plot_data_site$radius,0.5),quantile(agg_phyto_plot_data_site$radius,0.75),max(agg_phyto_plot_data_site$radius))
+		legend_sizes=legend_sizes*2
+		
+		
+		phyto_map=leaflet(phyto_points) %>%
+			addTiles() %>%
+			addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>%
+			addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
+			addPolygons(data=ul_poly,smoothFactor=2,fillOpacity = 0,weight=3,color="lightskyblue") %>%
+			addFeatures(phyto_points,color="orange",radius=phyto_points$radius, stroke=F,fillOpacity=0.5,
+			) %>%
+			addFeatures(phyto_points,color="orange",stroke=F,fillOpacity=0,
+				popup = paste0(
+					"MLID: ", phyto_points$Monitoring.Location.ID,
+					"<br> Value: ", signif(phyto_points$z_val,2))
+			) %>%			
 
-	})	
+			addLegendCustom(colors = rep("orange", length(legend_labs)), labels = legend_labs, sizes = legend_sizes) %>%
+
+			addLayersControl(
+				position ="topleft",
+				baseGroups = c("Topo","Satellite"),
+				options = layersControlOptions(collapsed = FALSE, autoZIndex=FALSE))
+			
+
+	})
 	
 	
 	
