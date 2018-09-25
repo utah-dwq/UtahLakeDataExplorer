@@ -428,19 +428,22 @@ server <- function(input, output){
 												wq_data$Month>=input$plot_months[1]&wq_data$Month<=input$plot_months[2]&
 												wq_data$Monitoring.Location.ID%in%reactive_objects$selected_sites
 												,]
-	})
 
-	observe({
+		reactive_objects$param_choices=unique(reactive_objects$wq_plot_data$Parameter)[order(unique(as.character(reactive_objects$wq_plot_data$Parameter)))]
+
 		reactive_objects$wq_map_data=wq_data[
 												wq_data$Year>=input$plot_years[1]&wq_data$Year<=input$plot_years[2]&
 												wq_data$Month>=input$plot_months[1]&wq_data$Month<=input$plot_months[2]
 												,]
+
+		reactive_objects$trophic_plot_data=trophic_data[
+								trophic_data$Year>=input$plot_years[1]&trophic_data$Year<=input$plot_years[2]&
+								trophic_data$Month>=input$plot_months[1]&trophic_data$Month<=input$plot_months[2]&
+								trophic_data$Monitoring.Location.ID%in%reactive_objects$selected_sites
+								,]
 	})
 
-	observe({
-		reactive_objects$param_choices=unique(reactive_objects$wq_plot_data$Parameter)[order(unique(as.character(reactive_objects$wq_plot_data$Parameter)))]
-	})
-	
+
 	output$chem_param1 <- renderUI({
 		selectInput("chem_param1", "Parameter:", reactive_objects$param_choices, selected=input$chem_param1)
 	})
@@ -451,17 +454,15 @@ server <- function(input, output){
    
 	observe({
 		req(input$chem_param1)
+		req(input$chem_param2)
 		reactive_objects$chem_frac1_choices=unique(reactive_objects$wq_plot_data$Fraction[reactive_objects$wq_plot_data$Parameter==input$chem_param1])
+		reactive_objects$chem_frac2_choices=unique(reactive_objects$wq_plot_data$Fraction[reactive_objects$wq_plot_data$Parameter==input$chem_param2])
 	})
 
 	output$chem_frac1 <- renderUI({
 		selectInput("chem_frac1", "Fraction:", reactive_objects$chem_frac1_choices, selected=input$chem_frac1)
 	})
 
-	observe({
-		req(input$chem_param2)
-		reactive_objects$chem_frac2_choices=unique(reactive_objects$wq_plot_data$Fraction[reactive_objects$wq_plot_data$Parameter==input$chem_param2])
-	})
 
 	output$chem_frac2 <- renderUI({
 		selectInput("chem_frac2", "Fraction:", reactive_objects$chem_frac2_choices, selected=input$chem_frac2)
@@ -471,29 +472,17 @@ server <- function(input, output){
 		req(input$chem_frac1)
 		reactive_objects$chem_reld1_choices=unique(reactive_objects$wq_plot_data$Depth[reactive_objects$wq_plot_data$Parameter==input$chem_param1&
 																										 reactive_objects$wq_plot_data$Fraction==input$chem_frac1])
+		req(input$chem_frac2)
+		reactive_objects$chem_reld2_choices=unique(reactive_objects$wq_plot_data$Depth[reactive_objects$wq_plot_data$Parameter==input$chem_param2&
+																										 reactive_objects$wq_plot_data$Fraction==input$chem_frac2])
 	})
 
 	output$reldepth1 <- renderUI({
 		selectInput("reldepth1", "Sample depth:", reactive_objects$chem_reld1_choices, selected=input$reldepth1)
 	})
 
-	observe({
-		req(input$chem_frac2)
-		reactive_objects$chem_reld2_choices=unique(reactive_objects$wq_plot_data$Depth[reactive_objects$wq_plot_data$Parameter==input$chem_param2&
-																										 reactive_objects$wq_plot_data$Fraction==input$chem_frac2])
-	})
-
 	output$reldepth2 <- renderUI({
 		selectInput("reldepth2", "Sample depth:", reactive_objects$chem_reld2_choices, selected=input$reldepth2)
-	})
-
-		
-	observe({
-		reactive_objects$trophic_plot_data=trophic_data[
-								trophic_data$Year>=input$plot_years[1]&trophic_data$Year<=input$plot_years[2]&
-								trophic_data$Month>=input$plot_months[1]&trophic_data$Month<=input$plot_months[2]&
-								trophic_data$Monitoring.Location.ID%in%reactive_objects$selected_sites
-								,]
 	})
 
 
@@ -532,10 +521,7 @@ server <- function(input, output){
 	})
 	
 	observe({
-		
-		
 		req(reactive_objects$phyto_plot_data)
-		
 			if(input$genus_or_division==1){
 				req(input$genus)
 				phyto_plot_data=reactive_objects$phyto_plot_data[reactive_objects$phyto_plot_data$Genus==input$genus,]
@@ -576,10 +562,7 @@ server <- function(input, output){
 	})
 	
 	
-	
-	selectInput("genus","Genus:",choices=unique(phyto_data$Genus)[order(unique(phyto_data$Genus))],selected="Dolichospermum")
-	
-	
+		
 	#Tab 1: Elevation plot outputs
 	output$elev_plot=renderPlot({
 		par(mfrow=c(2,1),mar=c(4.1,6.1,4.1,5.1))
@@ -880,7 +863,7 @@ server <- function(input, output){
 	
 	#Tab 6: Phytoplankton
 	
-	#Genus/Division boxplots
+	#Genus/Division time series (single taxon)
 	output$phyto_output<-renderPlot({
 		req(reactive_objects$agg_phyto_plot_data)
 		agg_phyto_plot_data=reactive_objects$agg_phyto_plot_data
