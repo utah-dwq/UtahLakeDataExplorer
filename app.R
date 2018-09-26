@@ -71,6 +71,14 @@ phyto_data=phyto_data[phyto_data$SampleType!="",]
 levels(phyto_data$SampleType)=c(levels(phyto_data$SampleType),"Total phytoplankton")
 phyto_data$SampleType[phyto_data$SampleType=="Total Phytoplankton" | phyto_data$SampleType=="Total Plankton Sample"]="Total phytoplankton"
 head(phyto_data)
+phyto_data$Division=as.character(phyto_data$Division)
+phyto_data$Division[is.na(phyto_data$Division) | phyto_data$Division==""]="Other"
+
+
+
+
+
+
 
 #Subset wq data to final only
 wq_data=wq_data[wq_data$QACQ.Status=="Final",]
@@ -352,10 +360,22 @@ ui <- fluidPage(
 						uiOutput("genus")
 					),
 					conditionalPanel(
-						condition="input.genus_or_division==2",
+						condition="input.genus_or_division==2 & input.phyto_plot_type==1",
+						radioButtons("stack_divs", "Stacked or single division:",choiceNames=c("Stack","Single"), choiceValues=c(1,0), selected=1,inline=T)
+					),
+					conditionalPanel(
+						condition="(input.genus_or_division==2 & input.stack_divs==0) | (input.genus_or_division==2 & input.phyto_plot_type==2)",
 						uiOutput("division")
 					),
-					radioButtons("abund_relabund","Abundance type:",choices=c("Abundance","Relative abundance"),selected="Relative abundance",inline=T),
+					radioButtons("abd_bv","Response type:",choiceNames=c("Abundance","Biovolume"),choiceValues=c(1,2),selected=1,inline=T),
+					conditionalPanel(
+						condition="input.abd_bv==1",
+						radioButtons("abund_relabund","Abundance type:",choices=c("Abundance","Relative abundance"),selected="Abundance",inline=T)
+					),
+					conditionalPanel(
+						condition="input.abd_bv==2",
+						radioButtons("bv_rbv","Biovolume type:",choices=c("Biovolume","Relative biovolume"),selected="Biovolume",inline=T)
+					),
 					conditionalPanel(
 						condition="input.phyto_plot_type==2",
 						radioButtons("phyto_z_fixed_dynamic", "Z-scaling:", choices=c("Dynamic","Fixed"),selected="Dynamic",inline=T)
@@ -509,43 +529,87 @@ server <- function(input, output){
 	observe({
 		phyto_plot_data=phyto_data[!is.na(phyto_data$Year) & !is.na(phyto_data$Month) & phyto_data$SampleType==input$phyto_samp_type,]
 		phyto_plot_data=phyto_plot_data[phyto_plot_data$Year>=input$phyto_plot_years[1] & phyto_plot_data$Year<=input$phyto_plot_years[2] & phyto_plot_data$Month>=input$phyto_plot_months[1] & phyto_plot_data$Month<=input$phyto_plot_months[2],]
-		if(dim(phyto_plot_data)[1]>0){
-			total_samp_sum=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month,data=phyto_plot_data,FUN='sum')
-			names(total_samp_sum)[names(total_samp_sum)=="CellperML"]="total_cellsML"
-			
-			#reactive_objects$genus_choices=unique(phyto_plot_data$Genus)[order(unique(as.character(phyto_plot_data$Genus)))]
-			#reactive_objects$division_choices=unique(phyto_plot_data$Division)[order(unique(as.character(phyto_plot_data$Division)))]
-			reactive_objects$total_samp_sum=total_samp_sum
-		}
+		#if(dim(phyto_plot_data)[1]>0){
+		#	total_samp_sum=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month,data=phyto_plot_data,FUN='sum')
+		#	names(total_samp_sum)[names(total_samp_sum)=="CellperML"]="total_cellsML"
+		#	
+		#	#reactive_objects$genus_choices=unique(phyto_plot_data$Genus)[order(unique(as.character(phyto_plot_data$Genus)))]
+		#	#reactive_objects$division_choices=unique(phyto_plot_data$Division)[order(unique(as.character(phyto_plot_data$Division)))]
+		#	reactive_objects$total_samp_sum=total_samp_sum
+		#}
 		reactive_objects$phyto_plot_data=phyto_plot_data
 	})
 	
 	observe({
 		req(reactive_objects$phyto_plot_data)
-			if(input$genus_or_division==1){
-				req(input$genus)
-				phyto_plot_data=reactive_objects$phyto_plot_data[reactive_objects$phyto_plot_data$Genus==input$genus,]
-				if(dim(phyto_plot_data)[1]>1){
-					#print(head(phyto_plot_data))
-					#print(dim(phyto_plot_data))
-					agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus,data=phyto_plot_data,FUN='sum')
-				}else{agg_phyto_plot_data=phyto_plot_data[,c("CellperML","Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month","Genus")]}
-				if(input$abund_relabund=="Abundance"){ylabel=paste(input$genus,"abundance (cells/mL)")}else{(ylabel=paste(input$genus,"relative abundance"))}
-			}else{
-				req(input$division)
-				phyto_plot_data=reactive_objects$phyto_plot_data[reactive_objects$phyto_plot_data$Division==input$division,]
-				if(dim(phyto_plot_data)[1]>1){
-					agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division,data=phyto_plot_data,FUN='sum')
-				}else{agg_phyto_plot_data=phyto_plot_data[,c("CellperML","Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month","Division")]}
-				if(input$abund_relabund=="Abundance"){ylabel=paste(input$division,"abundance (cells/mL)")}else{(ylabel=paste(input$division,"relative abundance"))}
-				
-			}
-			agg_phyto_plot_data=merge(agg_phyto_plot_data,reactive_objects$total_samp_sum,all.y=T)
-			agg_phyto_plot_data$CellperML[is.na(agg_phyto_plot_data$CellperML)]=0
-			agg_phyto_plot_data$RA=agg_phyto_plot_data$CellperML/agg_phyto_plot_data$total_cellsML
-			reactive_objects$agg_phyto_plot_data=agg_phyto_plot_data
-			reactive_objects$phyto_ylab=ylabel
+			
+			#ID all unique samples
+			samples=data.frame(unique(reactive_objects$phyto_plot_data[,c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date")]))
+			
+			#Subset to selected response var (abundance or biovolume)
+			
+			
+			#Aggregate data by genus or division
+			#if(input$genus_or_division==1){ #genus
+			#	groups=data.frame(unique(phyto_data$Genus))
+			#	names(groups)="group"
+			#	samples_groups=merge(groups,divisions,all=T)
+			#	phyto_data_filled=merge(groups,phyto_data, all.x=T)
+			#	
+			#
+			#}else{ #division
+			#
+			#
+			#
+			#}
+			
+			
+			#Fill implicit zeros
+			
+			
+			#Calculate relative if selected
+				#Calculate sample totals
+		
+			
+			
+			
+			#reactive_objects$agg_phyto_plot_data=agg_phyto_plot_data
+			#reactive_objects$phyto_ylab=ylabel
 
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			#if(input$genus_or_division==1){
+			#	req(input$genus)
+			#	phyto_plot_data=reactive_objects$phyto_plot_data[reactive_objects$phyto_plot_data$Genus==input$genus,]
+			#	if(dim(phyto_plot_data)[1]>1){
+			#		#print(head(phyto_plot_data))
+			#		#print(dim(phyto_plot_data))
+			#		agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus,data=phyto_plot_data,FUN='sum')
+			#	}else{agg_phyto_plot_data=phyto_plot_data[,c("CellperML","Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month","Genus")]}
+			#	if(input$abund_relabund=="Abundance"){ylabel=paste(input$genus,"abundance (cells/mL)")}else{(ylabel=paste(input$genus,"relative abundance"))}
+			#}else{
+			#	req(input$division)
+			#	phyto_plot_data=reactive_objects$phyto_plot_data[reactive_objects$phyto_plot_data$Division==input$division,]
+			#	if(dim(phyto_plot_data)[1]>1){
+			#		agg_phyto_plot_data=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division,data=phyto_plot_data,FUN='sum')
+			#	}else{agg_phyto_plot_data=phyto_plot_data[,c("CellperML","Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month","Division")]}
+			#	if(input$abund_relabund=="Abundance"){ylabel=paste(input$division,"abundance (cells/mL)")}else{(ylabel=paste(input$division,"relative abundance"))}
+			#	
+			#}
+			#agg_phyto_plot_data=merge(agg_phyto_plot_data,reactive_objects$total_samp_sum,all.y=T)
+			#agg_phyto_plot_data$CellperML[is.na(agg_phyto_plot_data$CellperML)]=0
+			#agg_phyto_plot_data$RA=agg_phyto_plot_data$CellperML/agg_phyto_plot_data$total_cellsML
+			
 	})
 	
 
