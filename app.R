@@ -558,9 +558,9 @@ server <- function(input, output){
 				
 				#Rename selected response var (abundance or biovolume)
 				if(input$abd_bv==1){ #abd
-					names(phyto_plot_data)[names(phyto_plot_data)=="CellperML"]="response"
+					names(phyto_plot_data)[names(phyto_plot_data)=="CellperML"]="raw_response"
 				}else{ #bv
-					names(phyto_plot_data)[names(phyto_plot_data)=="CellVolume_u3mL"]="response"	
+					names(phyto_plot_data)[names(phyto_plot_data)=="CellVolume_u3mL"]="raw_response"	
 				}
 	
 				#Aggregate data by genus or division
@@ -568,34 +568,54 @@ server <- function(input, output){
 					#Fill implicit zeros
 					samps_groups=merge(samples, genera, all=T)
 					phyto_plot_data=merge(samps_groups, phyto_plot_data, all.x=T)
-					phyto_plot_data$response[is.na(phyto_plot_data$response)]=0
+					phyto_plot_data$raw_response[is.na(phyto_plot_data$raw_response)]=0
 					
 					#Aggregate
-					agg_phyto_plot_data=aggregate(response~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Genus, phyto_plot_data, FUN='sum')
+					agg_phyto_plot_data=aggregate(raw_response~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus, phyto_plot_data, FUN='sum')
+					
+					#subset to selected genus
+					agg_phyto_plot_data=agg_phyto_plot_data[agg_phyto_plot_data$Genus==input$genus,]
 					
 				}else{ #division
 					#Fill implicit zeros
 					samps_groups=merge(samples, divisions, all=T)
 					phyto_plot_data=merge(samps_groups, phyto_plot_data, all.x=T)
-					phyto_plot_data$response[is.na(phyto_plot_data$response)]=0
+					phyto_plot_data$raw_response[is.na(phyto_plot_data$raw_response)]=0
 					
 					#Aggregate
-					agg_phyto_plot_data=aggregate(response~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Division, phyto_plot_data, FUN='sum')
+					agg_phyto_plot_data=aggregate(raw_response~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division, phyto_plot_data, FUN='sum')
+					
+					#Subset to selected division (if stack_divs==0)
+					if(input$stack_divs==0){
+						agg_phyto_plot_data=agg_phyto_plot_data[agg_phyto_plot_data$Division==input$division,]	
+					}
 				}
 							
 				#Calc sample totals
-				totals=aggregate(response~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date, phyto_plot_data, FUN='sum')
-				names(totals)[names(totals)=="response"]="total"
+				totals=aggregate(raw_response~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date, phyto_plot_data, FUN='sum')
+				names(totals)[names(totals)=="raw_response"]="total"
 				
 				#Merge sample totals to agg'd data
 				agg_phyto_plot_data=merge(agg_phyto_plot_data, totals, all.x=T)
 				
 				
 				#Calculate relative response
-				agg_phyto_plot_data$rel_response=agg_phyto_plot_data$response/agg_phyto_plot_data$total
+				agg_phyto_plot_data$rel_response=agg_phyto_plot_data$raw_response/agg_phyto_plot_data$total
+			
 			}else{
 				agg_phyto_plot_data=phyto_plot_data[,c("CellperML","Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month","Genus")]
 			}
+			
+			#Set response
+			if((input$abd_bv==1 & input$abund_relabund=="Abundance") | (input$abd_bv==2 & input$bv_rbv=="Biovolume")){
+				agg_phyto_plot_data$response=agg_phyto_plot_data$raw_response
+			}else{
+				agg_phyto_plot_data$response=agg_phyto_plot_data$rel_response
+			}
+			
+			#Rename grouping var (Genus or Division)
+			names(agg_phyto_plot_data)[names(agg_phyto_plot_data)=="Genus"]="group"
+			names(agg_phyto_plot_data)[names(agg_phyto_plot_data)=="Division"]="group"
 			
 			
 			#Append into reactive_objects
@@ -632,7 +652,10 @@ server <- function(input, output){
 
 			reactive_objects$phyto_ylab=ylabel
 			
+			
+			
 			print(ylabel)
+			print(head(agg_phyto_plot_data))
 			
 	})
 	
