@@ -423,7 +423,7 @@ ui <- fluidPage(
 			),
 			conditionalPanel(
 				condition="input.tabs==6 & input.phyto_plot_type==1",
-				plotOutput(outputId = "phyto_output",width="800px",height="800px")
+				plotOutput(outputId = "phyto_output",width="1000px",height="800px")
 			),
 			conditionalPanel(
 				condition="input.tabs==6 & input.phyto_plot_type==2",
@@ -546,7 +546,7 @@ server <- function(input, output){
 	
 			if(dim(phyto_plot_data)[1]>1){
 				#ID all unique samples
-				samples=data.frame(unique(phyto_plot_data[,c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date")]))
+				samples=data.frame(unique(phyto_plot_data[,c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month")]))
 				
 				#ID all divisions
 				divisions=data.frame(unique(phyto_plot_data[,c("Division")]))
@@ -560,7 +560,7 @@ server <- function(input, output){
 				if(input$abd_bv==1){ #abd
 					names(phyto_plot_data)[names(phyto_plot_data)=="CellperML"]="raw_response"
 				}else{ #bv
-					names(phyto_plot_data)[names(phyto_plot_data)=="CellVolume_u3mL"]="raw_response"	
+					names(phyto_plot_data)[names(phyto_plot_data)=="CellVolume_u3mL"]="raw_response"
 				}
 	
 				#Aggregate data by genus or division
@@ -644,18 +644,16 @@ server <- function(input, output){
 				if(input$bv_rbv=="Biovolume"){
 					ycomp2="biovolume (u3/mL)"
 				}else{
-					ycomp2="Relative biovolume"
+					ycomp2="relative biovolume"
 				}
 			}
 
 			ylabel=paste(ycomp1,ycomp2)
 
 			reactive_objects$phyto_ylab=ylabel
-			
-			
-			
-			print(ylabel)
-			print(head(agg_phyto_plot_data))
+
+			#print(ylabel)
+			#print(head(agg_phyto_plot_data))
 			
 	})
 	
@@ -974,46 +972,50 @@ server <- function(input, output){
 	
 	#Tab 6: Phytoplankton
 	
-	#Genus/Division time series (single taxon)
+	#Genus/Division time series (single taxon) (consider adding log y capability - will need to transform response w/ +1 or +0.01 etc), need to work on stacked plot legend placement/colors
 	output$phyto_output<-renderPlot({
-	#	req(reactive_objects$agg_phyto_plot_data)
-	#	agg_phyto_plot_data=reactive_objects$agg_phyto_plot_data
-	#	ylabel=reactive_objects$phyto_ylab
-	#	par(mfrow=c(2,1),mar=c(4.1,6.1,4.1,5.1))
-	#	if(dim(reactive_objects$phyto_plot_data)[1]>0){
-	#		if(input$phyto_plot_type==1){
-	#			if(input$abund_relabund=="Abundance"){
-	#				suppressWarnings(
-	#					lineplot.CI(Year,CellperML,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_years[1],input$phyto_plot_years[2]),cex=1.5,
-	#						ylab=ylabel,xlab="Year",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
-	#				)
-	#				axis(1,cex.axis=1.5,cex.lab=2)
-	#				suppressWarnings(
-	#					lineplot.CI(Month,CellperML,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_months[1],input$phyto_plot_months[2]),cex=1.5,
-	#						ylab=ylabel,xlab="Month",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
-	#				)
-	#				axis(1,cex.axis=1.5,cex.lab=2)
-	#			}else{
-	#				suppressWarnings(
-	#					lineplot.CI(Year,RA,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_years[1],input$phyto_plot_years[2]),cex=1.5,
-	#						ylab=ylabel,xlab="Year",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
-	#				)
-	#				axis(1,cex.axis=1.5,cex.lab=2)
-	#				suppressWarnings(
-	#					lineplot.CI(Month,RA,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_months[1],input$phyto_plot_months[2]),cex=1.5,
-	#						ylab=ylabel,xlab="Month",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
-	#				)
-	#				axis(1,cex.axis=1.5,cex.lab=2)
-	#			}
-	#		}
-	#	}else{
-	#		frame()
-	#		box()
-	#		text(0.5,0.5,"No data for selected years & months.", cex=1.75)
-	#		frame()
-	#		box()
-	#		text(0.5,0.5,"No data for selected years & months.", cex=1.75)
-	#	}
+		req(reactive_objects$agg_phyto_plot_data)
+		agg_phyto_plot_data=reactive_objects$agg_phyto_plot_data
+		ylabel=reactive_objects$phyto_ylab
+		par(mfrow=c(2,1),mar=c(4.1,6.1,4.1,20.1))
+		if(dim(reactive_objects$phyto_plot_data)[1]>0){
+			if(input$phyto_plot_type==1){	
+				if(input$genus_or_division==2 & input$stack_divs==1){ #stacked division plot
+					cols=brewer.pal(length(levels(agg_phyto_plot_data$group)), name="Dark2")
+					par(xpd=TRUE)
+					suppressWarnings(
+						lineplot.CI(Year, response, group, data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_years[1],input$phyto_plot_years[2]),cex=1.5,
+							ylab=ylabel,xlab="Year",cex.lab=1.5,cex.axis=1.5,err.width=0.05,col=cols,lwd=2,xaxt='n',fixed=T, cex.leg=1.5, x.leg=(input$phyto_plot_years[2]+1))
+					)
+					axis(1,cex.axis=1.5,cex.lab=2)
+					suppressWarnings(
+						lineplot.CI(Month, response, group, data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_months[1],input$phyto_plot_months[2]),cex=1.5,
+							ylab=ylabel,xlab="Month",cex.lab=1.5,cex.axis=1.5,err.width=0.05,col=cols,lwd=2,xaxt='n',fixed=T, cex.leg=1.5, x.leg=(input$phyto_plot_months[2]+0.45))
+					)
+					axis(1,cex.axis=1.5,cex.lab=2)
+					par(xpd=FALSE)
+				}else{ #All single plots
+					suppressWarnings(
+						lineplot.CI(Year, response, group, data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_years[1],input$phyto_plot_years[2]),cex=1.5,
+							ylab=ylabel,xlab="Year",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
+					)
+					axis(1,cex.axis=1.5,cex.lab=2)
+					suppressWarnings(
+						lineplot.CI(Month, response, group,data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_months[1],input$phyto_plot_months[2]),cex=1.5,
+							ylab=ylabel,xlab="Month",cex.lab=1.5,cex.axis=1.5,legend=F,err.width=0.05,pch=21,col="blue",lwd=2,xaxt='n')
+					)
+					axis(1,cex.axis=1.5,cex.lab=2)
+				}
+			}
+			
+		}else{
+			frame()
+			box()
+			text(0.5,0.5,"No data for selected years & months.", cex=1.75)
+			frame()
+			box()
+			text(0.5,0.5,"No data for selected years & months.", cex=1.75)
+		}
 	})
 		
 		
