@@ -538,11 +538,11 @@ server <- function(input, output){
 				samples=data.frame(unique(phyto_plot_data[,c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month")]))
 				
 				#ID all divisions
-				divisions=data.frame(unique(phyto_plot_data[,c("Division")]))
+				divisions=data.frame(unique(phyto_data[,c("Division")]))
 				names(divisions)="Division"
 				
 				#ID all genera
-				genera=data.frame(unique(phyto_plot_data[,c("Genus")]))
+				genera=data.frame(unique(phyto_data[,c("Genus")]))
 				names(genera)="Genus"
 				
 				#Rename selected response var (abundance or biovolume)
@@ -1050,8 +1050,6 @@ server <- function(input, output){
 						fixed_scale<-data.frame(phyto_data[,"CellVolume_u3mL"],rescale(log10(phyto_data[,"CellVolume_u3mL"]+1),c(0.1,0.5)))
 					}
 					names(fixed_scale)=c("response","fixed_scale")
-					
-					print(fixed_scale[is.na(fixed_scale$fixed_scale),])
 					fixed_scale_lm=lm(fixed_scale~log10(response+1),fixed_scale)
 					agg_phyto_plot_data_site$response=agg_phyto_plot_data_site$z_val
 					agg_phyto_plot_data_site$size=predict(fixed_scale_lm,newdata=agg_phyto_plot_data_site)
