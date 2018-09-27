@@ -363,13 +363,17 @@ ui <- fluidPage(
 						condition="(input.genus_or_division==2 & input.stack_divs==0) | (input.genus_or_division==2 & input.phyto_plot_type==2)",
 						uiOutput("division")
 					),
-					radioButtons("abd_bv","Response type:",choiceNames=c("Abundance","Biovolume"),choiceValues=c(1,2),selected=1,inline=T),
+					
 					conditionalPanel(
-						condition="input.abd_bv==1",
+						condition="input.phyto_samp_type=='Total phytoplankton'",
+						radioButtons("abd_bv","Response type:",choiceNames=c("Abundance","Biovolume"),choiceValues=c(1,2),selected=1,inline=T)
+					),
+					conditionalPanel(
+						condition="input.abd_bv==1 | input.phyto_samp_type=='HAB'",
 						radioButtons("abund_relabund","Abundance type:",choices=c("Abundance","Relative abundance"),selected="Abundance",inline=T)
 					),
 					conditionalPanel(
-						condition="input.abd_bv==2",
+						condition="input.abd_bv==2 & input.phyto_samp_type!='HAB'",
 						radioButtons("bv_rbv","Biovolume type:",choices=c("Biovolume","Relative biovolume"),selected="Biovolume",inline=T)
 					),
 					conditionalPanel(
@@ -546,7 +550,7 @@ server <- function(input, output){
 				names(genera)="Genus"
 				
 				#Rename selected response var (abundance or biovolume)
-				if(input$abd_bv==1){ #abd
+				if(input$abd_bv==1 | input$phyto_samp_type=="HAB"){ #abd
 					names(phyto_plot_data)[names(phyto_plot_data)=="CellperML"]="raw_response"
 				}else{ #bv
 					names(phyto_plot_data)[names(phyto_plot_data)=="CellVolume_u3mL"]="raw_response"
@@ -595,12 +599,23 @@ server <- function(input, output){
 				agg_phyto_plot_data=phyto_plot_data[,c("CellperML","Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month","Genus")]
 			}
 			
+			#Update input.adv_bv to abundance if sample type is HAB
+			
 			#Set response
 			if((input$abd_bv==1 & input$abund_relabund=="Abundance") | (input$abd_bv==2 & input$bv_rbv=="Biovolume")){
 				agg_phyto_plot_data$response=agg_phyto_plot_data$raw_response
 			}else{
 				agg_phyto_plot_data$response=agg_phyto_plot_data$rel_response
 			}
+			if(input$phyto_samp_type=="HAB"){
+				if(input$abund_relabund=="Abundance"){
+					agg_phyto_plot_data$response=agg_phyto_plot_data$raw_response
+				}else{
+					agg_phyto_plot_data$response=agg_phyto_plot_data$rel_response
+				}
+			
+			}
+			
 			
 			#Rename grouping var (Genus or Division)
 			names(agg_phyto_plot_data)[names(agg_phyto_plot_data)=="Genus"]="group"
@@ -623,7 +638,7 @@ server <- function(input, output){
 				}
 			}
 			
-			if(input$abd_bv==1){
+			if(input$abd_bv==1 | input$phyto_samp_type=="HAB"){
 				if(input$abund_relabund=="Abundance"){
 					ycomp2="abundance (cells/mL)"
 				}else{
@@ -1038,26 +1053,49 @@ server <- function(input, output){
 			
 			####Fixed z-scaling
 			if(input$phyto_z_fixed_dynamic=="Fixed"){
-				if((input$abd_bv==1 & input$abund_relabund=="Relative abundance") | input$abd_bv==2 & input$bv_rbv=="Relative biovolume"){
-					agg_phyto_plot_data_site$size=(agg_phyto_plot_data_site$z_val+0.1)*0.5
-					legend_labs=c(0,0.25,0.5,0.75,1)
-					legend_sizes=((legend_labs+0.1))*75
-				}else{
-					if(input$abd_bv==1){
+				if(input$phyto_samp_type=="Total phytoplankton"){
+					if((input$abd_bv==1 & input$abund_relabund=="Relative abundance") | (input$abd_bv==2 & input$bv_rbv=="Relative biovolume")){
+						agg_phyto_plot_data_site$size=(agg_phyto_plot_data_site$z_val+0.1)*0.5
+						legend_labs=c(0,0.25,0.5,0.75,1)
+						legend_sizes=((legend_labs+0.1))*75
+					}else{
+						if(input$abd_bv==1){
+							if(input$genus_or_division==1){
+								temp_agg=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus, phyto_data, FUN='sum')
+							}else{
+								temp_agg=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division, phyto_data, FUN='sum')
+							}
+							fixed_scale<-data.frame(phyto_data[,"CellperML"],rescale(log10(phyto_data[,"CellperML"]+1),c(0.1,0.5)))
+						}else{
+							if(input$genus_or_division==1){
+								temp_agg=aggregate(CellVolume_u3mL~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus, phyto_data, FUN='sum')
+							}else{
+								temp_agg=aggregate(CellVolume_u3mL~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division, phyto_data, FUN='sum')
+							}
+							fixed_scale<-data.frame(temp_agg[,"CellVolume_u3mL"],rescale(log10(temp_agg[,"CellVolume_u3mL"]+1),c(0.1,0.5)))
+						}
+						names(fixed_scale)=c("response","fixed_scale")
+						fixed_scale_lm=lm(fixed_scale~log10(response+1),fixed_scale)
+						agg_phyto_plot_data_site$response=agg_phyto_plot_data_site$z_val
+						agg_phyto_plot_data_site$size=predict(fixed_scale_lm,newdata=agg_phyto_plot_data_site)
+						legend_labs=c(min(fixed_scale$response, na.rm=T),quantile(fixed_scale$response,0.5, na.rm=T),quantile(fixed_scale$response,0.9, na.rm=T),quantile(fixed_scale$response,0.95, na.rm=T),quantile(fixed_scale$response,0.99, na.rm=T),quantile(fixed_scale$response,0.999, na.rm=T))
+						legend_labs=signif(legend_labs,2)
+						legend_sizes=c(min(fixed_scale$fixed_scale, na.rm=T),quantile(fixed_scale$fixed_scale,0.5, na.rm=T),quantile(fixed_scale$fixed_scale,0.9, na.rm=T),quantile(fixed_scale$fixed_scale,0.95, na.rm=T),quantile(fixed_scale$fixed_scale,0.99, na.rm=T),quantile(fixed_scale$fixed_scale,0.999, na.rm=T))*75
+						legend_sizes=legend_sizes*2	
+					}
+				}
+				if(input$phyto_samp_type=="HAB"){
+					if(input$abund_relabund=="Relative abundance"){
+						agg_phyto_plot_data_site$size=(agg_phyto_plot_data_site$z_val+0.1)*0.5
+						legend_labs=c(0,0.25,0.5,0.75,1)
+						legend_sizes=((legend_labs+0.1))*75
+					}else{
 						if(input$genus_or_division==1){
 							temp_agg=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus, phyto_data, FUN='sum')
 						}else{
 							temp_agg=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division, phyto_data, FUN='sum')
 						}
 						fixed_scale<-data.frame(phyto_data[,"CellperML"],rescale(log10(phyto_data[,"CellperML"]+1),c(0.1,0.5)))
-					}else{
-						if(input$genus_or_division==1){
-							temp_agg=aggregate(CellVolume_u3mL~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus, phyto_data, FUN='sum')
-						}else{
-							temp_agg=aggregate(CellVolume_u3mL~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division, phyto_data, FUN='sum')
-						}
-						fixed_scale<-data.frame(temp_agg[,"CellVolume_u3mL"],rescale(log10(temp_agg[,"CellVolume_u3mL"]+1),c(0.1,0.5)))
-					}
 					names(fixed_scale)=c("response","fixed_scale")
 					fixed_scale_lm=lm(fixed_scale~log10(response+1),fixed_scale)
 					agg_phyto_plot_data_site$response=agg_phyto_plot_data_site$z_val
@@ -1065,10 +1103,12 @@ server <- function(input, output){
 					legend_labs=c(min(fixed_scale$response, na.rm=T),quantile(fixed_scale$response,0.5, na.rm=T),quantile(fixed_scale$response,0.9, na.rm=T),quantile(fixed_scale$response,0.95, na.rm=T),quantile(fixed_scale$response,0.99, na.rm=T),quantile(fixed_scale$response,0.999, na.rm=T))
 					legend_labs=signif(legend_labs,2)
 					legend_sizes=c(min(fixed_scale$fixed_scale, na.rm=T),quantile(fixed_scale$fixed_scale,0.5, na.rm=T),quantile(fixed_scale$fixed_scale,0.9, na.rm=T),quantile(fixed_scale$fixed_scale,0.95, na.rm=T),quantile(fixed_scale$fixed_scale,0.99, na.rm=T),quantile(fixed_scale$fixed_scale,0.999, na.rm=T))*75
-					legend_sizes=legend_sizes*2
-		
+					legend_sizes=legend_sizes*2	
+					}
+						
 				}
 			agg_phyto_plot_data_site$radius=agg_phyto_plot_data_site$size*75
+			
 			}else{
 				###Dynamic z-scaling
 				agg_phyto_plot_data_site$size=rescale(agg_phyto_plot_data_site$z_val,c(0.1,0.5))
