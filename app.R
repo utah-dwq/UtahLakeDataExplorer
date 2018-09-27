@@ -218,7 +218,7 @@ ui <- fluidPage(
 				helpText("Marker sizes are scaled by the average abundance or relative abundance observed at each location."),
 				helpText("Click on a marker to see the monitoring location ID and value associated with that point (rounded to 2 significant digits)."),
 				helpText("HAB sample types were only analyzed for potentially harmful taxa. Total phytoplankton sample types were analyzed for all taxa present."),
-				helpText("Dynamic z-scaling scales marker sizes based on selected data. Fixed z-scaling defines a single scale of marker sizes for all plots; enabling visual comparisons among different taxa or time periods.")
+				helpText("Dynamic z-scaling scales marker sizes based on selected data. Fixed z-scaling defines a single scale of marker sizes for all plots; enabling visual comparisons among different taxa, time periods, or sample types.")
 			),
 
 			
@@ -538,11 +538,11 @@ server <- function(input, output){
 				samples=data.frame(unique(phyto_plot_data[,c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month")]))
 				
 				#ID all divisions
-				divisions=data.frame(unique(phyto_plot_data[,c("Division")]))
+				divisions=data.frame(unique(phyto_data[,c("Division")]))
 				names(divisions)="Division"
 				
 				#ID all genera
-				genera=data.frame(unique(phyto_plot_data[,c("Genus")]))
+				genera=data.frame(unique(phyto_data[,c("Genus")]))
 				names(genera)="Genus"
 				
 				#Rename selected response var (abundance or biovolume)
@@ -1022,7 +1022,6 @@ server <- function(input, output){
 		}
         
 		
-		if(input$genus_or_division==1){legend_title_gd=input$genus}else{legend_title_gd=input$division}
 		
 		#Aggregate data by site
 		if(dim(agg_phyto_plot_data)[1]>0){
@@ -1045,13 +1044,21 @@ server <- function(input, output){
 					legend_sizes=((legend_labs+0.1))*75
 				}else{
 					if(input$abd_bv==1){
+						if(input$genus_or_division==1){
+							temp_agg=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus, phyto_data, FUN='sum')
+						}else{
+							temp_agg=aggregate(CellperML~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division, phyto_data, FUN='sum')
+						}
 						fixed_scale<-data.frame(phyto_data[,"CellperML"],rescale(log10(phyto_data[,"CellperML"]+1),c(0.1,0.5)))
 					}else{
-						fixed_scale<-data.frame(phyto_data[,"CellVolume_u3mL"],rescale(log10(phyto_data[,"CellVolume_u3mL"]+1),c(0.1,0.5)))
+						if(input$genus_or_division==1){
+							temp_agg=aggregate(CellVolume_u3mL~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Genus, phyto_data, FUN='sum')
+						}else{
+							temp_agg=aggregate(CellVolume_u3mL~Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Date+Year+Month+Division, phyto_data, FUN='sum')
+						}
+						fixed_scale<-data.frame(temp_agg[,"CellVolume_u3mL"],rescale(log10(temp_agg[,"CellVolume_u3mL"]+1),c(0.1,0.5)))
 					}
 					names(fixed_scale)=c("response","fixed_scale")
-					
-					print(fixed_scale[is.na(fixed_scale$fixed_scale),])
 					fixed_scale_lm=lm(fixed_scale~log10(response+1),fixed_scale)
 					agg_phyto_plot_data_site$response=agg_phyto_plot_data_site$z_val
 					agg_phyto_plot_data_site$size=predict(fixed_scale_lm,newdata=agg_phyto_plot_data_site)
