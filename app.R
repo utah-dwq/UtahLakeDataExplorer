@@ -539,7 +539,13 @@ server <- function(input, output){
 	
 			if(dim(phyto_plot_data)[1]>1){
 				#ID all unique samples
-				samples=data.frame(unique(phyto_plot_data[,c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month")]))
+				if(input$abd_bv==2){
+					samples=data.frame(unique(phyto_plot_data[!is.na(phyto_plot_data$CellVolume_u3mL),c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month")]))
+				}
+				else{
+					samples=data.frame(unique(phyto_plot_data[!is.na(phyto_plot_data$CellperML),c("Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Date","Year","Month")]))				
+				}
+				
 				
 				#ID all divisions
 				divisions=data.frame(unique(phyto_data[,c("Division")]))
@@ -987,7 +993,8 @@ server <- function(input, output){
 				if(input$genus_or_division==2 & input$stack_divs==1){ #stacked division plot
 					xleg_yr=input$phyto_plot_years[2]+((input$phyto_plot_years[2]-input$phyto_plot_years[1])/(max(phyto_data$Year, na.rm=T)-min(phyto_data$Year, na.rm=T)))
 					xleg_mon=input$phyto_plot_months[2]+((input$phyto_plot_months[2]-input$phyto_plot_months[1])/(15))
-					cols=brewer.pal(length(levels(agg_phyto_plot_data$group)), name="Dark2")
+					pal_len=max(c(length(levels(agg_phyto_plot_data$group)),8))
+					cols=brewer.pal(pal_len, name="Dark2")
 					par(xpd=TRUE)
 					suppressWarnings(
 						lineplot.CI(Year, response, group, data=agg_phyto_plot_data,x.cont=TRUE,xlim=c(input$phyto_plot_years[1],input$phyto_plot_years[2]),cex=1.5,
