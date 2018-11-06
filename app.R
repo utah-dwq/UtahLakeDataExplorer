@@ -1,5 +1,26 @@
 
 #setwd("F:\\Shiny\\UtahLakeDataExplorer")
+
+#install.packages("lubridate")
+#install.packages("reshape2")
+#install.packages("gplots")
+#install.packages("sciplot")
+#install.packages("sp")
+#install.packages("sf")
+#install.packages("leaflet")
+#install.packages("RColorBrewer")
+#install.packages("raster")
+#install.packages("rgdal")
+#install.packages("gdalUtils")
+#install.packages("mapview")
+#install.packages("Matrix")
+#install.packages("gdistance")
+#install.packages("ipdw")
+#install.packages("scales")
+#
+#
+#rsconnect::deployApp("F:\\Shiny\\UtahLakeDataExplorer", account="udwq", appName="UtahLakeDataExplorer2")
+
 library(lubridate)
 library(reshape2)
 library(gplots)
