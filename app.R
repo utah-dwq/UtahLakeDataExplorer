@@ -486,11 +486,11 @@ server <- function(input, output){
 
 
 	output$chem_param1 <- renderUI({
-		selectInput("chem_param1", "Parameter:", reactive_objects$param_choices, selected=input$chem_param1)
+		selectInput("chem_param1", "Parameter:", reactive_objects$param_choices, selected=input$chem_param1,selectize=T)
 	})
     
 	output$chem_param2 <- renderUI({
-		selectInput("chem_param2", "Parameter:", reactive_objects$param_choices, selected=input$chem_param2)
+		selectInput("chem_param2", "Parameter:", reactive_objects$param_choices, selected=input$chem_param2,selectize=T)
 	})
    
 	observe({
@@ -501,12 +501,12 @@ server <- function(input, output){
 	})
 
 	output$chem_frac1 <- renderUI({
-		selectInput("chem_frac1", "Fraction:", reactive_objects$chem_frac1_choices, selected=input$chem_frac1)
+		selectInput("chem_frac1", "Fraction:", reactive_objects$chem_frac1_choices, selected=input$chem_frac1,selectize=T)
 	})
 
 
 	output$chem_frac2 <- renderUI({
-		selectInput("chem_frac2", "Fraction:", reactive_objects$chem_frac2_choices, selected=input$chem_frac2)
+		selectInput("chem_frac2", "Fraction:", reactive_objects$chem_frac2_choices, selected=input$chem_frac2,selectize=T)
 	})
 
 	observe({
@@ -519,16 +519,16 @@ server <- function(input, output){
 	})
 
 	output$reldepth1 <- renderUI({
-		selectInput("reldepth1", "Sample depth:", reactive_objects$chem_reld1_choices, selected=input$reldepth1)
+		selectInput("reldepth1", "Sample depth:", reactive_objects$chem_reld1_choices, selected=input$reldepth1,selectize=T)
 	})
 
 	output$reldepth2 <- renderUI({
-		selectInput("reldepth2", "Sample depth:", reactive_objects$chem_reld2_choices, selected=input$reldepth2)
+		selectInput("reldepth2", "Sample depth:", reactive_objects$chem_reld2_choices, selected=input$reldepth2,selectize=T)
 	})
 
 
 	output$map_param <- renderUI({
-		selectInput("map_param", "Parameter:", reactive_objects$param_choices, selected=input$map_param)
+		selectInput("map_param", "Parameter:", reactive_objects$param_choices, selected=input$map_param,selectize=T)
 	})
 
 	observe({
@@ -537,7 +537,7 @@ server <- function(input, output){
 	})
 
 	output$map_frac <- renderUI({
-		selectInput("map_frac", "Fraction:", reactive_objects$map_frac_choices, selected=input$map_frac)
+		selectInput("map_frac", "Fraction:", reactive_objects$map_frac_choices, selected=input$map_frac,selectize=T)
 	})
 
 	observe({
@@ -690,15 +690,15 @@ server <- function(input, output){
 	
 
 	output$map_reldepth <- renderUI({
-		selectInput("map_reldepth", "Sample depth:", reactive_objects$map_reldepth_choices, selected=input$map_reldepth)
+		selectInput("map_reldepth", "Sample depth:", reactive_objects$map_reldepth_choices, selected=input$map_reldepth,selectize=T)
 	})
 
 	output$genus <- renderUI({
-		selectInput("genus","Genus:",choices=unique(phyto_data$Genus)[order(unique(phyto_data$Genus))], selected=input$genus)
+		selectInput("genus","Genus:",choices=unique(phyto_data$Genus)[order(unique(phyto_data$Genus))], selected=input$genus,selectize=T)
 	})
 	
 	output$division <- renderUI({
-		selectInput("division","Algal division:",choices=unique(phyto_data$Division)[order(unique(phyto_data$Division))], selected=input$division)
+		selectInput("division","Algal division:",choices=unique(phyto_data$Division)[order(unique(phyto_data$Division))], selected=input$division,selectize=T)
 	})
 	
 	
