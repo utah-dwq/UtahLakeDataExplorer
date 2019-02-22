@@ -1,4 +1,4 @@
-## UtahLakeDataExplorer
+## Utah Lake Data Explorer
 An interactive water quality data visualization and analysis tool for Utah Lake.
 
 ### Description
