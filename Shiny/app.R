@@ -1,26 +1,37 @@
 
-#setwd("F:\\Shiny\\UtahLakeDataExplorer")
+###################################*
+#### Utah Lake Data Explorer - Shiny App ####
+###################################*
 
-#install.packages("lubridate")
-#install.packages("reshape2")
-#install.packages("gplots")
-#install.packages("sciplot")
-#install.packages("sp")
-#install.packages("sf")
-#install.packages("leaflet")
-#install.packages("RColorBrewer")
-#install.packages("raster")
-#install.packages("rgdal")
-#install.packages("gdalUtils")
-#install.packages("mapview")
-#install.packages("Matrix")
-#install.packages("gdistance")
-#install.packages("ipdw")
-#install.packages("scales")
-#
-#
-#rsconnect::deployApp("F:\\Shiny\\UtahLakeDataExplorer", account="udwq", appName="UtahLakeDataExplorer2")
+# setwd('F:\\Shiny\\UtahLakeDataExplorer')
 
+# install.packages('data.table')
+# install.packages('lubridate')
+# install.packages('reshape2')
+# install.packages('gplots')
+# install.packages('sciplot')
+# install.packages('sp')
+# install.packages('sf')
+# install.packages('leaflet')
+# install.packages('RColorBrewer')
+# install.packages('raster')
+# install.packages('rgdal')
+# install.packages('gdalUtils')
+# install.packages('mapview')
+# install.packages('Matrix')
+# install.packages('gdistance')
+# install.packages('ipdw')
+# install.packages('scales')
+
+
+# Publish Shiny app (run in console)
+# deployApp(appDir=getwd(),appFiles=NULL,forceUpdate=T,account='markfernandez',appName='TEST_UtahLakeDataExplorer2')
+# https://markfernandez.shinyapps.io/TEST_UtahLakeDataExplorer2/
+
+
+
+
+# library(data.table)
 library(lubridate)
 library(reshape2)
 library(gplots)
@@ -37,146 +48,51 @@ library(Matrix)
 library(gdistance)
 library(ipdw)
 library(scales)
+library(rsconnect)
+library(shiny)
 
-source("functions/calcTSI.R")
-source("functions/plot3dTSI.R")
-source("functions/ipdwMap.R")
+options(scipen=999,digits=5)
 
-options(scipen=999)
+# Clean workspace
+# rm(list=ls()); gc()
 
-
-######
-######Double check for unit consistency - looks good currently - consider building autocheck or conversion feature if necessary in the future
-
-####Data pre-processing
-
-#Provisional data rejected
-#Non-detects at ½ sample detection limit
-#All chla included (corrected, uncorrected, and unspecified all translated to Chlorophyll a)
-#Samples of chemical parameters missing fraction or depth not included.
-#ChlA and TP TSI analyses conducted only on total/surface samples.
-#Fraction == Acid Soluble = Total
-#All sample depths for Secchi set to N/A
-#All pH fractions set to N/A
-#All total dissolved solids fractions marked dissolved
-#TFS, TSS, and TVS fractions all marked total
-#Turbidity fractions all marked N/A
-#Settleable solids fraction marked total.
-#All fecal coliform sample depths assumed surface.
-
-#Read in datasets
-wq_data=read.csv(file="data/UtahLake_WQ_data.csv")
-wq_data$Date=as.Date(wq_data$Activity.Start.Date,format="%m/%d/%Y")
-wq_data$Year=year(wq_data$Date)
-wq_data$Month=month(wq_data$Date)
-#wq_data$Monitoring.Location.ID=as.factor()
-dim(wq_data)
-
-lake_elev_data=read.csv(file="data/UL_Elevation_Avg_Monthly.csv")
-
-translate_params=read.csv(file="data/translate_params.csv")
-
-nla_data=read.csv(file="data/NLA2012_TrophicData.csv")
-
-ul_poly=st_read("polyrast","UtahLake_poly_wgs84")
-ul_poly=st_zm(ul_poly) #Removing 'z' coordinates for leaflet
-
-#Phytoplankton pre-processing
-phyto_data=read.csv(file="data/phytoplankton.csv")
-#phyto_data$CellperML=as.numeric(phyto_data$CellperML)
-phyto_data$Date2=as.Date(phyto_data$Date,format="%m/%d/%Y")
-phyto_data$Year=year(phyto_data$Date2)
-phyto_data$Year[phyto_data$Date==2008]=2008
-phyto_data$Month=month(phyto_data$Date2)
-phyto_data=phyto_data[phyto_data$SampleType!="",]
-levels(phyto_data$SampleType)=c(levels(phyto_data$SampleType),"Total phytoplankton")
-phyto_data$SampleType[phyto_data$SampleType=="Total Phytoplankton" | phyto_data$SampleType=="Total Plankton Sample"]="Total phytoplankton"
-head(phyto_data)
-phyto_data$Division=as.character(phyto_data$Division)
-phyto_data$Division[is.na(phyto_data$Division) | phyto_data$Division==""]="Other"
-phyto_data$Genus=as.character(phyto_data$Genus)
-phyto_data$Genus[is.na(phyto_data$Genus) | phyto_data$Genus==""]="Other"
-
-#Subset wq data to final only
-wq_data=wq_data[wq_data$QACQ.Status=="Final",]
-dim(wq_data)
-
-#Merge w/ parameter translation table
-wq_data=merge(wq_data,translate_params,all.x=T)
-dim(wq_data)
-
-#Drop samples where fraction or depth are blank
-wq_data=wq_data[wq_data$Fraction!=""&wq_data$Depth!="",]
-dim(wq_data)
-
-##Split chemistry and profile data (profiles have DataLoggerLine !="")
-profile_data=wq_data[wq_data$Data.Logger.Line!="",]
-wq_data=wq_data[wq_data$Data.Logger.Line=="",]
-dim(profile_data)
-dim(wq_data)
-
-#Set non-detects to 1/2 detection limit
-wq_data$Result.Value[is.na(wq_data$Result.Value)]=wq_data$Detection.Quantitation.Limit.Value1[is.na(wq_data$Result.Value)]/2
-
-#Calculate N:P ratios
-np_flat=wq_data[wq_data$Parameter=="Nitrogen" | wq_data$Parameter=="Phosphate-phosphorus",]
-np_mat=dcast(np_flat, Date+Year+Month+Fraction+Depth+Monitoring.Location.ID+Monitoring.Location.Latitude+Monitoring.Location.Longitude+Result.Unit~Parameter, value.var="Result.Value", fun.aggregate=mean) #Handful of duplicate value uploads under different activity IDs - requires aggregation function
-np_mat$NP_mass=np_mat$Nitrogen/np_mat[,"Phosphate-phosphorus"]
-np_mat$NP_mol=np_mat$NP_mass*(30.974/14.007)
-#write.csv(file="data//np_matrix.csv",np_mat,row.names=F)
-
-#Flatten N:P ratios
-np_flat=na.omit(melt(np_mat,id.vars=c("Date","Year","Month","Fraction","Depth","Monitoring.Location.ID","Monitoring.Location.Latitude","Monitoring.Location.Longitude","Result.Unit"),measure.vars=c("NP_mass","NP_mol"),variable.name="Parameter",value.name="Result.Value"))
-levels(np_flat$Parameter)=c(levels(np_flat$Parameter),"N:P ratio (mass)","N:P ratio (molar)")
-np_flat$Parameter[np_flat$Parameter=="NP_mass"]="N:P ratio (mass)"
-np_flat$Parameter[np_flat$Parameter=="NP_mol"]="N:P ratio (molar)"
-
-#Append N:P ratios back to wq_dat
-wq_data=wq_data[,names(np_flat)]
-dim(wq_data)
-wq_data=rbind(wq_data,np_flat)
-dim(wq_data)
+source('functions/plot3dTSI.R')
+source('functions/ipdwMap.R')
 
 
-#Create trophic data subset for TSI plots (total & surface factors only)
-trophic_data=wq_data[
-					wq_data$Fraction=="Total"&
-					wq_data$Depth=="Surface",
-					]
-trophic_data=trophic_data[
-					trophic_data$Parameter==as.character("Phosphate-phosphorus")|
-					trophic_data$Parameter=="Chlorophyll a"
-					,]
-trophic_data=trophic_data[trophic_data$Result.Unit!="mg",]
-secchi=wq_data[wq_data$Parameter=="Depth, Secchi disk depth",]
-trophic_data=rbind(trophic_data,secchi)
 
-summary(trophic_data)
-	#dropped chl a w/ Result.Unit=="mg", subsetting to surface only
-	#In future, may want to build in unit conversions, units in current data set consistent (other than 2 samples w/ chl a mg issue)
-dim(trophic_data)
-				
-#Calculate TSI values for trophic_data
-trophic_data$Result.Value[trophic_data$Result.Value==0]=0.01 #Set 0 values to 0.01 for TSI calcs
-trophic_data=trophic_data[,c("Date","Monitoring.Location.ID","Parameter","Result.Value","Year","Month")] #Subset columns
-dim(trophic_data)
-trophic_data=unique(trophic_data) #Remove any duplicates
-dim(trophic_data)
-	#cast to matrix
-trophic_data=dcast(trophic_data,Date+Monitoring.Location.ID+Year+Month~Parameter,value.var="Result.Value",fun.aggregate=mean) #Found 4 samples on same site/day July 31, 1991 - all others unique (after removing dups)
-	#calculate TSIs
-TSI=calcTSI(trophic_data,in_format="matrix",chl="Chlorophyll a",TP="Phosphate-phosphorus",SD="Depth, Secchi disk depth") 
-trophic_data=cbind(trophic_data,TSI)
-summary(trophic_data)
 
-TSI=calcTSI(nla_data,in_format="matrix",chl="Chlorophyll_a_ugL",TP="Total_phosphorus_mgL",SD="Secchi_m") 
-nla_data=cbind(nla_data,TSI)
-head(nla_data)
 
-#Define NLA comparison parameter choices:
-nla_comp_choices=c("Phosphate-phosphorus","Chlorophyll a","Depth, Secchi disk depth","Total_nitrogen_mgL")
-names(nla_comp_choices)=c("Total phosphorus (mg/L)","Chlorophyll a (ug/L)","Secchi depth (m)","Total nitrogen (mg/L)")
+###################################*
+#### Load Processed Datasets ####
+###################################*
 
+# Get filenames
+tmp=list.files('RDataFiles',pattern='*.RData',full.names=T)
+length(tmp) # 6 files
+
+# Load all .RData files
+lapply(tmp,load,.GlobalEnv)
+
+# Convert all to data.frames - Optional
+# lake_elev_data=as.data.frame(lake_elev_data)
+# nla_data=as.data.frame(nla_data)
+# phyto_data=as.data.frame(phyto_data)
+# trophic_data=as.data.frame(trophic_data)
+# wq_data=as.data.frame(wq_data)
+
+# Define NLA comparison parameter choices:
+nla_comp_choices=c('Phosphate-phosphorus','Chlorophyll a','Depth, Secchi disk depth','Total_nitrogen_mgL')
+names(nla_comp_choices)=c('Total phosphorus (mg/L)','Chlorophyll a (ug/L)','Secchi depth (m)','Total nitrogen (mg/L)')
+
+
+
+
+
+
+###################################*
+#### UI ####
+###################################*
 
 # Define UI for app ----
 ui <- fluidPage(
@@ -451,6 +367,10 @@ ui <- fluidPage(
 )
 
 
+
+###################################*
+#### Server ####
+###################################* xxx
 
 server <- function(input, output){
 
@@ -810,18 +730,20 @@ server <- function(input, output){
 			}
 		}
 	
+			#Plot type 2: boxplots
 		if(input$chem_plot_type==2){
 			par(mar=c(16,8,4.1,3))
 			if(dim(plot_data)[1]>0){
 				if(plot_log=="y" | plot_log=="xy"){
-					boxplot(Result.Value~Monitoring.Location.ID,plot_data,cex.axis=2,cex.lab=2.5,ylab=ylabel,main=title,cex.main=2,yaxt='n',las=2,log='y')
+					boxplot(Result.Value~Monitoring.Location.ID,plot_data,cex.axis=2,cex.lab=2.5,ylab=ylabel,xlab=NA,main=title,cex.main=2,yaxt='n',las=2,log='y')
 				}else{
-					boxplot(Result.Value~Monitoring.Location.ID,plot_data,cex.axis=2,cex.lab=2.5,ylab=ylabel,main=title,cex.main=2,yaxt='n',las=2)
+					boxplot(Result.Value~Monitoring.Location.ID,plot_data,cex.axis=2,cex.lab=2.5,ylab=ylabel,xlab=NA,main=title,cex.main=2,yaxt='n',las=2)
 				}
-				axis(2,cex.axis=2)
+				axis(2,cex.axis=2) # xxx
 			}
 		}
-		
+			
+			#Plot type 3: pairwise
 		if(input$chem_plot_type==3){
 			par(mar=c(8,8,2,3))
 			sp_data=na.omit(sp_data)
@@ -969,7 +891,7 @@ server <- function(input, output){
 		
 		
 		
-	#Tab 5: WQ Map	
+	#Tab 5: WQ Map
 	
 	costraster=raster("polyrast/costrast2")
 	mask_poly=readOGR(paste0(getwd(),"/polyrast"),"UtahLake_poly_wgs84")
@@ -1161,8 +1083,7 @@ server <- function(input, output){
 				addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>%
 				addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
 				addPolygons(data=ul_poly,smoothFactor=2,fillOpacity = 0,weight=3,color="lightskyblue") %>%
-				addFeatures(phyto_points,color="orange",radius=phyto_points$radius, stroke=F,fillOpacity=0.5,
-				) %>%
+				addFeatures(phyto_points,color="orange",radius=phyto_points$radius, stroke=F,fillOpacity=0.5) %>%
 				addFeatures(phyto_points,color="orange",stroke=F,fillOpacity=0,
 					popup = paste0(
 						"MLID: ", phyto_points$Monitoring.Location.ID,
@@ -1192,14 +1113,5 @@ server <- function(input, output){
 	
 }
 
-
+# Run app
 shinyApp(ui = ui, server = server)
-
-
-
-
-
-
-
-
-
