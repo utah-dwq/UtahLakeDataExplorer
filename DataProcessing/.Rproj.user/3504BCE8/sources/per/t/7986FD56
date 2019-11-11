@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1573250212715.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3913239788",
+    "id" : "7986FD56",
+    "lastKnownWriteTime" : 1573489962,
+    "last_content_update" : 1573489962345,
+    "path" : "O:/Projects/Baltimore_MJP/States/Utah/Utah Lake Nutrient Criteria/UtahLakeDataExplorer/DataProcessing/dataProcessing.r",
+    "project_path" : "dataProcessing.r",
+    "properties" : {
+        "cursorPosition" : "762,49",
+        "scrollLine" : "743"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

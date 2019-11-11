@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1573249995238.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3158524747",
+    "id" : "D26A807D",
+    "lastKnownWriteTime" : 1573489452,
+    "last_content_update" : 1573489452117,
+    "path" : "O:/Projects/Baltimore_MJP/States/Utah/Utah Lake Nutrient Criteria/UtahLakeDataExplorer/DataProcessing/WQP/WQP_DataPull.r",
+    "project_path" : "WQP_DataPull.r",
+    "properties" : {
+        "cursorPosition" : "372,0",
+        "scrollLine" : "348"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

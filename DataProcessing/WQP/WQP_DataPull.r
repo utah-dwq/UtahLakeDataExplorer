@@ -22,6 +22,11 @@
 citation()
 # R Core Team. 2019. R: A language and environment for statistical computing. R Foundation for Statistical Computing,Vienna,Austria. URL https://www.R-project.org/.
 
+citation('wqTools')
+# Jake Vander Laan, Utah Division of Water Quality, jvander@utah.gov, Elise Hinman, Utah Division of Water Quality and ehinman@utah.gov. 2019. wqTools: A Collection of R Tools for Utah Division of Water Quality. R package version 0.0.0.9000.
+
+
+
 
 
 
@@ -126,6 +131,7 @@ names(dql_units)=gsub(' ','', names(dql_units))
 # Edit dql_units names
 tmp=paste0(names(dql_units),'Unit')
 tmp[1]='ResultIdentifier'
+cbind(names(dql_units),tmp)
 names(dql_units)=tmp
 
 # Join detection type and units
@@ -193,7 +199,6 @@ wq_data[CharacteristicName %in% field_params,.N,by=ActivityTypeCode]
 # knitr::kable(table(wq_data[CharacteristicName %in% field_params,'ActivityTypeCode']))
 
 # Remove lab data for field parameters
-# REVISIT. Why are "Sample-Routine" obs removed?
 wq_data=wq_data[!(CharacteristicName %in% field_params &
 										ActivityTypeCode %in% c('Sample-Routine','Sample-Integrated Vertical Profile','Quality Control Sample-Field Replicate')),]
 dim(wq_data) # 50829 xx
@@ -307,7 +312,7 @@ dim(wq_data) # 50829 xx
 
 # Subset to relevant columns
 cols_keep=c(
-	'OrganizationIdentifier','OrganizationFormalName','MonitoringLocationIdentifier','MonitoringLocationName','MonitoringLocationTypeName','LatitudeMeasure','LongitudeMeasure','HorizontalCoordinateReferenceSystemDatumName','ActivityStartDate','DataLoggerLine',
+	'OrganizationIdentifier','OrganizationFormalName','MonitoringLocationIdentifier','MonitoringLocationName','MonitoringLocationTypeName','LatitudeMeasure','LongitudeMeasure','HorizontalCoordinateReferenceSystemDatumName','ActivityStartDate',
 	# These are the columns that have been added through the code above  
 	'SampleDepthUnit','SampleDepthValue','RelativeDepth','datetime','minute','hour',
 	'CharacteristicName','ResultSampleFractionText','ResultMeasureValue','ResultMeasure.MeasureUnitCode', 
@@ -321,11 +326,11 @@ wq_data=wq_data[,..cols_keep]
 
 # Extracting unique result value for each site, date, depth, parameter, & fraction
 wq_data=unique(wq_data)
-dim(wq_data) # 49418 xx
+dim(wq_data) # 47114 xx
 
 # Check for multiple result values by site, date, depth, parameter, & fraction
 tmp=wq_data[,.(MonitoringLocationIdentifier,datetime,SampleDepthValue,RelativeDepth,CharacteristicName,ResultSampleFractionText)]
-nrow(wq_data) - nrow(unique(tmp)) # 5569 - multiple results
+nrow(wq_data) - nrow(unique(tmp)) # 3265 multiple results
 
 # *NOTE:*  
 # Some records have one or more unique result value. These are flagged in processed data w/ result_count column.
@@ -333,7 +338,7 @@ nrow(wq_data) - nrow(unique(tmp)) # 5569 - multiple results
 # Copy dataset and relevant fields
 tmp=c('MonitoringLocationIdentifier','datetime','SampleDepthValue','RelativeDepth','CharacteristicName','ResultSampleFractionText')
 result_count=copy(wq_data[,..tmp])
-dim(result_count) # 49418 xx
+dim(result_count) # 47114 xx
 
 # Count multiple results
 result_count=result_count[,.(result_count=.N),by=tmp]
@@ -341,14 +346,14 @@ dim(result_count) # 43849 xx
 
 # Join result_count (use all fields)
 wq_data=merge(wq_data,result_count,by=tmp,all.x=T) # Left outer join
-dim(wq_data) # 49422 xx
+dim(wq_data) # 47114 xx
 wq_data[,.N,by=result_count]
 #    result_count     N
-# 1:            1 40123
-# 2:            2  5176
-# 3:            3  1902
-# 4:            4  1384
-# 5:            5   695
+# 1:            1 42244
+# 2:            2  1070
+# 3:            3  1950
+# 4:            4  1188
+# 5:            5   520
 # 6:            6    96
 # 7:           13    13
 # 8:           12    12
@@ -357,8 +362,8 @@ wq_data[,.N,by=result_count]
 # Sort
 setorder(wq_data,MonitoringLocationIdentifier,datetime,SampleDepthValue,RelativeDepth,CharacteristicName,ResultSampleFractionText,ResultMeasureValue)
 
-# Note: Files below are names "ul_data" to avoid confusion with the final processed "wq_data.RData" file.
 # Export to csv and RData
+# Note: Files below are names "ul_data" to avoid confusion with the final processed "wq_data.RData" file.
 fwrite(wq_data,paste0('ArchivedProcessedDatasets/ul_data_wqp_processed_',Sys.Date(),'.csv'))
 save(wq_data,file=paste0('ArchivedProcessedDatasets/ul_data_',Sys.Date(),'.RData'))
 

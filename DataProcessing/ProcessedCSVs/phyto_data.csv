@@ -8884,20 +8884,20 @@ Monitoring.Location.ID,SiteName,Date,SampleType,Division,Genus,Taxon,CellperML,C
 4917778,Provo Bay Neck NE of south shore boat ramp,2017-11-30,Total phytoplankton,Cyanophyta,Merismopedia,Merismopedia glauca (Ehrenberg) Kützing,1389,4166,2017,11,,,,,
 4917778,Provo Bay Neck NE of south shore boat ramp,2017-11-30,Total phytoplankton,Cyanophyta,Other,unknown filamentous cyanophyte 2,8445,4222400,2017,11,,,,,
 4917778,Provo Bay Neck NE of south shore boat ramp,2017-11-30,Total phytoplankton,Cyanophyta,Phormidium,Phormidium species 2,4928,20401920,2017,11,,,,,
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Bacillariophyta,Centric diatom,centric diatoms,498,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Bacillariophyta,Pennate diatom,pennate diatoms,237,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Chlamydomonas,Chlamydomonas species,84,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Coelastrum,Coelastrum species,203,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Crucigenia,Crucigenia quadrata,34,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Scenedesmus,Scenedesmus bijuga,68,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Scenedesmus,Scenedesmus quadricauda,34,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Scenedesmus,Scenedesmus species,68,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Cyanophyta,Aphanizomenon,Aphanizomenon flos-aquae,2179,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Cyanophyta,Aphanothece,Aphanothece species,380,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Cyanophyta,Cylindrospermopsis,Cylindrospermopsis species,169,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Cyanophyta,Dolichospermum,Dolichispermum sigmoideum (Anabaena circinalis),3725,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Euglenophyta,Euglena,Euglena species,8,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
-4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Euglenophyta,Trachellomonas,Trachellomonas species,8,,2014,10,Utah Lake Jordan River at Narrows,0,40.44266124,-111.9227943,UTAHDWQ_WQX-4994720
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Bacillariophyta,Centric diatom,centric diatoms,498,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Bacillariophyta,Pennate diatom,pennate diatoms,237,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Chlamydomonas,Chlamydomonas species,84,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Coelastrum,Coelastrum species,203,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Crucigenia,Crucigenia quadrata,34,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Scenedesmus,Scenedesmus bijuga,68,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Scenedesmus,Scenedesmus quadricauda,34,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Chlorophyta,Scenedesmus,Scenedesmus species,68,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Cyanophyta,Aphanizomenon,Aphanizomenon flos-aquae,2179,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Cyanophyta,Aphanothece,Aphanothece species,380,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Cyanophyta,Cylindrospermopsis,Cylindrospermopsis species,169,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Cyanophyta,Dolichospermum,Dolichispermum sigmoideum (Anabaena circinalis),3725,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Euglenophyta,Euglena,Euglena species,8,,2014,10,,,,,
+4994720,Utah Lake Jordan River at Narrows,2014-10-22,HAB,Euglenophyta,Trachellomonas,Trachellomonas species,8,,2014,10,,,,,
 4994790,JORDAN R AT UTAH L OUTLET U121 XING,,Total phytoplankton,Bacillariophyta,Centric diatom,centric diatoms,34,23520,2008,1,JORDAN R AT UTAH L OUTLET U121 XING,0,40.36095174,-111.8985136,UTAHDWQ_WQX-4994790
 4994790,JORDAN R AT UTAH L OUTLET U121 XING,,Total phytoplankton,Bacillariophyta,Melosira,Melosira varians,7,8400,2008,1,JORDAN R AT UTAH L OUTLET U121 XING,0,40.36095174,-111.8985136,UTAHDWQ_WQX-4994790
 4994790,JORDAN R AT UTAH L OUTLET U121 XING,,Total phytoplankton,Bacillariophyta,Pennate diatom,pennate diatoms,48,38400,2008,1,JORDAN R AT UTAH L OUTLET U121 XING,0,40.36095174,-111.8985136,UTAHDWQ_WQX-4994790

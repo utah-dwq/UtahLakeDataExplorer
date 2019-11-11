@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1573162529693.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "609642186",
+    "id" : "1D59A215",
+    "lastKnownWriteTime" : 1573490954,
+    "last_content_update" : 1573490954036,
+    "path" : "O:/Projects/Baltimore_MJP/States/Utah/Utah Lake Nutrient Criteria/UtahLakeDataExplorer/Shiny/app.R",
+    "project_path" : "app.R",
+    "properties" : {
+        "cursorPosition" : "36,18",
+        "scrollLine" : "16"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

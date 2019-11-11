@@ -25,6 +25,8 @@
 
 
 # Publish Shiny app (run in console)
+# library(shiny)
+# library(rsconnect)
 # deployApp(appDir=getwd(),appFiles=NULL,forceUpdate=T,account='markfernandez',appName='TEST_UtahLakeDataExplorer2')
 # https://markfernandez.shinyapps.io/TEST_UtahLakeDataExplorer2/
 

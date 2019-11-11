@@ -10,7 +10,6 @@
 ###################################*
 
 # Jake Vander Lann (jvander@utah.gov)
-# Mark Fernandez (mark.fernandez@tetratech.com)
 
 
 
@@ -56,7 +55,7 @@ na.strings=c(NA,'NA','',' ','<Null>','None')
 compElev=4489.045
 
 # Source custom functions
-source('../functions/calcTSI.R')
+source('../Shiny/functions/calcTSI.R')
 
 
 
@@ -75,7 +74,7 @@ source('../functions/calcTSI.R')
 
 # Load data
 sites=fread('DataInput/Stations.csv',sep=',',header=T,skip=0,check.names=T,na.strings=na.strings)
-dim(sites) # 49 xx
+dim(sites) # 48 xx
 
 # Convert to character
 sites[,Monitoring.Location.ID:=as.character(Monitoring.Location.ID)]
@@ -149,7 +148,7 @@ dev.off()
 ###################################*
 
 # Load polygon
-ul_poly=st_read('../polyrast','UtahLake_poly_wgs84')
+ul_poly=st_read('../Shiny/polyrast','UtahLake_poly_wgs84')
 ul_poly=st_zm(ul_poly) # Removing 'z' coordinates for leaflet
 
 
@@ -285,14 +284,14 @@ setorder(phyto_data,Monitoring.Location.ID,Date,Division,Genus)
 ###################################*
 
 # Notes:
-# ===========================================.
+# =========================================.
 # All Fecal Coliform set to Surface
 # All Settleable solids set to Total
 # All Turbidity (TURB) set to Fraction=N/A
 
 # NOTE: "translate_params.csv" requires "N/A" values for the Shiny app, so do not include "N/A" in na.strings
 # Check for "N/A"
-if(any(grepl('N/A',na.strings))) print('STOP - na.string cannot include "N/A"')
+if(any(grepl('N/A',na.strings))) print("STOP - na.string cannot include 'N/A'")
 
 # Load data
 translate_params=fread('DataInput/translate_params.csv',sep=',',header=T,skip=0,check.names=T,na.strings=na.strings)
@@ -339,6 +338,8 @@ setorder(nla_data,UID)
 #### Process Data ####
 ###################################*
 
+### Notes:
+# =================================================.
 # Provisional data rejected
 # Non-detects at ½ sample detection limit
 # All chla included (corrected, uncorrected, and unspecified all translated to Chlorophyll a)
@@ -355,7 +356,7 @@ setorder(nla_data,UID)
 
 # Load wq_data pre-processed data
 load('WQP/ul_data.RData')
-dim(wq_data) # 49422 xx
+dim(wq_data) # 47114 xx
 
 # Rename fields (to match Shiny code)
 setnames(wq_data,'ActivityStartDate','Date')
@@ -365,61 +366,54 @@ setnames(wq_data,'ResultMeasureValue','Result.Value')
 # Check ResultStatusIdentifier
 wq_data[,.N,by=ResultStatusIdentifier]
 #    ResultStatusIdentifier     N
-# 1:                  Final 15836
-# 2:               Accepted 33497
+# 1:                  Final 15664
+# 2:               Accepted 31361
 # 3:            Provisional    89
 
 # Remove Provisional data
 wq_data=wq_data[ResultStatusIdentifier!='Provisional']
-dim(wq_data) # 49333 xx
+dim(wq_data) # 47025 xx
 
 # Check RelativeDepth
 wq_data[,.N,by=RelativeDepth]
 #    RelativeDepth     N
-# 1:          <NA> 34870
+# 1:          <NA> 32562
 # 2:       Surface 13543
 # 3:        Bottom   920
 
 # Check for SampleDepthValue when RelativeDepth=NA
-wq_data[is.na(SampleDepthValue) & is.na(RelativeDepth),.N]
-# 4834 - Potential observations to include
+wq_data[is.na(SampleDepthValue) & is.na(RelativeDepth),.N] # 4665
 
 # Check Depth Units
 tmp=wq_data[!is.na(SampleDepthValue),.N,by=SampleDepthUnit]
 tmp
 #    SampleDepthUnit     N
-# 1:               m 30036
+# 1:               m 27897
 
 # Standardize Depth units - Manually adjust code below as needed
 if(nrow(tmp)>1) cat('STOP - Multiple depth units. Manually adjust code below and fix.')
 # wq_data[SampleDepthUnit=='ft',':='(SampleDepthValue=SampleDepthValue/3.28084,SampleDepthUnit='m')]
 
 # Set SampleDepthValue <=1 m to Surface; >1 m to Bottom
-# REVISIT. CONFIRM! Previous version just deleted all RelativeDepth=NA. Confirm UT wants to do this, and that 1m is an appropriate threshold.
 wq_data[is.na(RelativeDepth) & SampleDepthValue<=1,RelativeDepth:='Surface']
 wq_data[is.na(RelativeDepth) & SampleDepthValue>1,RelativeDepth:='Bottom']
 
-# Check RelativeDepth
+# (Re)Check RelativeDepth
 wq_data[,.N,by=RelativeDepth]
 #    RelativeDepth     N
-# 1:          <NA>  4834
-# 2:       Surface 32196
-# 3:        Bottom 12303
+# 1:          <NA>  4665
+# 2:       Surface 30511
+# 3:        Bottom 11849
 
 
 
 
 
 #### Join translate_params
-# Edit translate_params field names to match WQP data
-tmp=c('CharacteristicName','ResultSampleFractionText','RelativeDepth','Parameter','Fraction','Depth')
-cbind(names(translate_params),tmp)
-names(translate_params)=tmp
-
 # Join translate_params to data
 intersect(names(wq_data),names(translate_params))
 wq_data=merge(wq_data,translate_params,by=c('CharacteristicName','ResultSampleFractionText','RelativeDepth'),all.x=T) # Left outer join
-dim(wq_data) # 49333 xx
+dim(wq_data) # 47025 xx
 
 # Drop unused fields
 wq_data[,CharacteristicName:=NULL]
@@ -427,14 +421,14 @@ wq_data[,ResultSampleFractionText:=NULL]
 wq_data[,RelativeDepth:=NULL]
 
 # Remove Fraction=NA
-sum(is.na(wq_data$Fraction)) # 4100
+sum(is.na(wq_data$Fraction)) # 4068
 wq_data=wq_data[!is.na(Fraction),]
-dim(wq_data) # 45233 xx
+dim(wq_data) # 42957 xx
 
 # Remove Depth=NA
-sum(is.na(wq_data$Depth)) # 4571
+sum(is.na(wq_data$Depth)) # 4402
 wq_data=wq_data[!is.na(Depth),]
-dim(wq_data) # 40662 xx
+dim(wq_data) # 38555 xx
 
 
 
@@ -455,7 +449,6 @@ tmp # Parameters with N>1 have multiple units
 if(nrow(tmp)>0) cat('STOP - Multiple units are present. Manually adjust code below to standardize units.')
 
 # Standardize units - Manually update code as needed
-# REVISIT. Confirm. Alternative is to remove data with non-majority units
 wq_data[Parameter=='Barium',.N,by=Result.Unit]
 wq_data[Parameter=='Barium'  & Result.Unit=='mg/l',':='(Result.Unit='ug/l',Result.Value=Result.Value*1000)]
 wq_data[Parameter=='Chlorophyll a',.N,by=Result.Unit]
@@ -469,7 +462,7 @@ wq_data[Parameter=='Salinity' & Result.Unit=='ppth',Result.Unit:='ppt']
 wq_data[Parameter=='Total Coliform',.N,by=Result.Unit]
 wq_data[Parameter=='Total Coliform' & Result.Unit=='#/100ml',Result.Unit:='MPN/100ml']
 
-# Check for multiple units
+# (Re)Check for multiple units
 tmp=wq_data[,1,by=.(Parameter,Result.Unit)]
 tmp=tmp[,.N,by=Parameter]
 tmp=tmp[N>1]
@@ -483,14 +476,14 @@ if(nrow(tmp)>0) cat('STOP - Multiple units are present. Manually adjust code bel
 
 
 ###################################*
-#### Impute NDs ####
+#### NDs ####
 ###################################*
 
 # Check NDs
 wq_data[,.N,by=ResultDetectionConditionText]
 #          ResultDetectionConditionText     N
 # 1:                       Not Detected  4581
-# 2:                               <NA> 35835
+# 2:                               <NA> 33728
 # 3: Present Above Quantification Limit   243
 # 4: Present Below Quantification Limit     3
 
@@ -504,7 +497,7 @@ tmp=wq_data[ResultDetectionConditionText=='Not Detected',.(Result.Unit,MethodDet
 tmp=unique(tmp)
 tmp # Some MDL units = NA
 tmp=tmp[Result.Unit!=MethodDetectionLevelUnit,]
-tmp # No missmatched units
+tmp # Should be empty
 if(nrow(tmp)>0) cat('STOP - Some value and MDL units do not match. Manually adjust code below to standardize MDL units.')
 
 # Standardize MDL units to match value units - Manually update code as needed
@@ -517,7 +510,7 @@ wq_data[is.na(Result.Value) & ResultDetectionConditionText=='Not Detected',Resul
 # Remove value=NA
 sum(is.na(wq_data$Result.Value)) # 1675
 wq_data=wq_data[!is.na(Result.Value),]
-dim(wq_data) # 38987 xx
+dim(wq_data) # 36880 xx
 
 
 
@@ -561,15 +554,14 @@ if(nrow(tmp)>0) cat('STOP - Zero values are present. Check if values are appropr
 tmp1=wq_data[Result.Value>0,min(Result.Value,na.rm=T),by=.(Fraction,Parameter,Result.Unit)]
 tmp1
 
-# Set inappropriate zero values to NA or epsilon - Manually update code as needed
-# REVISIT. "Epsilon" can be set to 1) minimum nonzero values, 2) half of minimum nonzero values, 3) NA, or 4) something else.
+# Set inappropriate zero values to "minimum/2" - Manually update code as needed
 # wq_data[Result.Value==0 & Fraction=='aaa' & Parameter=='bbb',
-# 				Result.Value:=tmp1[Fraction='aaa' & Parameter=='bbb',V1]]
+# 				Result.Value:=tmp1[Fraction='aaa' & Parameter=='bbb',V1/2]]
 
 # Remove value=NA
 sum(is.na(wq_data$Result.Value)) # 0
 wq_data=wq_data[!is.na(Result.Value),]
-dim(wq_data) # 38987 xx
+dim(wq_data) # 36880 xx
 
 
 
@@ -580,19 +572,21 @@ dim(wq_data) # 38987 xx
 #### Create Profile Dataset ####
 ###################################*
 
-# Extract profile data
-profile_data=copy(wq_data[!is.na(DataLoggerLine),])
-dim(profile_data) # 15032 xx
+# Code chunk not run. Archived for future potential use. Requires "DataLoggerLine" field from WQP data pull (not present).
 
-# Join Sites
-intersect(names(profile_data),names(sites))
-profile_data=merge(profile_data,sites,by='MonitoringLocationIdentifier',all.x=T) # Left outer join
-profile_data[,Monitoring.Location.ID:=as.character(Monitoring.Location.ID)]
-dim(profile_data) # 15032 xx
-
-# Subset WQP data
-wq_data=copy(wq_data[is.na(DataLoggerLine),])
-dim(wq_data) # 23955 xx
+# # Extract profile data
+# profile_data=copy(wq_data[!is.na(DataLoggerLine),])
+# dim(profile_data) # 15032 xx
+# 
+# # Join Sites
+# intersect(names(profile_data),names(sites))
+# profile_data=merge(profile_data,sites,by='MonitoringLocationIdentifier',all.x=T) # Left outer join
+# profile_data[,Monitoring.Location.ID:=as.character(Monitoring.Location.ID)]
+# dim(profile_data) # 15032 xx
+# 
+# # Subset WQP data
+# wq_data=copy(wq_data[is.na(DataLoggerLine),])
+# dim(wq_data) # 23955 xx
 
 
 
@@ -628,7 +622,7 @@ np_flat[Parameter=='NP_mol',Parameter:='N:P ratio (molar)']
 
 # Append N:P ratios back to wq_data
 wq_data=rbindlist(list(wq_data,np_flat),use.names=T,fill=T)
-dim(wq_data) # 25175 xx
+dim(wq_data) # 38100 xx
 
 
 
@@ -644,13 +638,13 @@ trophic_data=copy(wq_data)
 trophic_data=trophic_data[Fraction=='Total' & Depth=='Surface' & Parameter %in% c('Chlorophyll a','Phosphate-phosphorus'),]
 dim(trophic_data) # 1807 xx
 
-# Subset Secchi data (Depth & Fraction = N/A)
+# Subset Secchi data (Depth & Fraction already euqual = N/A)
 tmp=copy(wq_data[Parameter=='Depth, Secchi disk depth',])
-dim(tmp) # 682 xx
+dim(tmp) # 2477 xx
 
 # Append Secchi
 trophic_data=rbindlist(list(trophic_data,tmp),use.names=T,fill=T)
-dim(trophic_data) # 2489 xx
+dim(trophic_data) # 4284 xx
 
 # Check for values=0 (affects TSI log calculations)
 trophic_data[Result.Value==0,.(Fraction,Parameter,Result.Value)]
@@ -665,14 +659,13 @@ tmp
 # 2:     Phosphate-phosphorus        mg/l 0.008
 # 3: Depth, Secchi disk depth           m 0.025
 
-# Set zero values to NA or epsilon
-# REVISIT. "Epsilon" can be set to 1) minimum nonzero values, 2) half of minimum nonzero values, 3) NA, or 4) something else. Currently set to minimum nonzero value
+# Set zero values to "minimum/2"
 trophic_data[Result.Value==0 & Parameter=='Chlorophyll a',
-						 Result.Value:=tmp[Parameter=='Chlorophyll a',V1]]
+						 Result.Value:=tmp[Parameter=='Chlorophyll a',V1/2]]
 trophic_data[Result.Value==0 & Parameter=='Phosphate-phosphorus ',
-						 Result.Value:=tmp[Parameter=='Phosphate-phosphorus ',V1]]
+						 Result.Value:=tmp[Parameter=='Phosphate-phosphorus ',V1/2]]
 trophic_data[Result.Value==0 & Parameter=='Depth, Secchi disk depth',
-						 Result.Value:=tmp[Parameter=='Depth, Secchi disk depth',V1]]
+						 Result.Value:=tmp[Parameter=='Depth, Secchi disk depth',V1/2]]
 
 # Pivot, Long to Wide
 trophic_data=dcast(trophic_data,MonitoringLocationIdentifier+Date~Parameter,value.var='Result.Value',fun.aggregate=mean,fill=NA)
@@ -707,13 +700,18 @@ setorder(trophic_data,Monitoring.Location.ID,Date)
 #### Aggregate WQP Data ####
 ###################################*
 
-# Pivot & Aggregate
-wq_data=dcast(wq_data,MonitoringLocationIdentifier+Date+Depth+Fraction+Result.Unit~Parameter,value.var='Result.Value',fun.aggregate=mean,fill=NA)
-dim(wq_data) # 8779 xx
+# Aggregation code not run.
 
-# Unpivot
-wq_data=melt(wq_data,id.vars=c('MonitoringLocationIdentifier','Date','Depth','Fraction','Result.Unit'),variable.factor=F,na.rm=T,variable.name='Parameter',value.name='Result.Value')
-dim(wq_data) # 23900 xx
+# Current size
+# dim(wq_data) # aaa xx
+# 
+# # Pivot & Aggregate
+# wq_data=dcast(wq_data,MonitoringLocationIdentifier+Date+Depth+Fraction+Result.Unit~Parameter,value.var='Result.Value',fun.aggregate=mean,fill=NA)
+# dim(wq_data) # aaa xx
+# 
+# # Unpivot
+# wq_data=melt(wq_data,id.vars=c('MonitoringLocationIdentifier','Date','Depth','Fraction','Result.Unit'),variable.factor=F,na.rm=T,variable.name='Parameter',value.name='Result.Value')
+# dim(wq_data) # aaa xx
 
 # Add Year and Month
 wq_data[,Year:=year(Date)]
@@ -723,10 +721,11 @@ wq_data[,Month:=month(Date)]
 intersect(names(wq_data),names(sites))
 wq_data=merge(wq_data,sites,by='MonitoringLocationIdentifier',all.x=T) # Left outer join
 wq_data[,Monitoring.Location.ID:=as.character(Monitoring.Location.ID)]
-dim(wq_data) # 23900 xx
+dim(wq_data) # 38100 xx
 
 # Sort
 setorder(wq_data,Monitoring.Location.ID,Date,Depth,Fraction,Parameter)
+
 
 
 
