@@ -52,6 +52,7 @@ library(ipdw)
 library(scales)
 library(rsconnect)
 library(shiny)
+library(ggplot2)
 
 options(scipen=999,digits=5)
 
@@ -71,7 +72,7 @@ source('functions/ipdwMap.R')
 
 # Get filenames
 tmp=list.files('RDataFiles',pattern='*.RData',full.names=T)
-length(tmp) # 6 files
+length(tmp) # 10 files
 
 # Load all .RData files
 lapply(tmp,load,.GlobalEnv)
@@ -87,9 +88,14 @@ lapply(tmp,load,.GlobalEnv)
 nla_comp_choices=c('Phosphate-phosphorus','Chlorophyll a','Depth, Secchi disk depth','Total_nitrogen_mgL')
 names(nla_comp_choices)=c('Total phosphorus (mg/L)','Chlorophyll a (ug/L)','Secchi depth (m)','Total nitrogen (mg/L)')
 
+# Define Sonde data parameter choices: 
+sonde_data_choices = c("Temperature", "Chl", "BGA", "pH", "Turbidity")
+names(sonde_data_choices) = c("Temperature (Celsius)", "Chlorophyll a fluorescence (RFU)", 
+                              "Phycocyanin fluorescence (RFU)", "pH", "Turbidity (NTU)")
 
-
-
+# Define Sonde data parameter choices: 
+wind_data_choices = c("Turbidity.ntu", "windspeed.m.s", "tau.wind")
+names(wind_data_choices) = c("Turbidity (NTU)", "Wind speed (m/s)", "Wave shear (N/m2)")
 
 
 ###################################*
@@ -124,7 +130,11 @@ ui <- fluidPage(
 		tabPanel("Trophic state",value=3),
 		tabPanel("NLA comparison",value=4),
 		tabPanel("Water quality map",value=5),
-		tabPanel("Phytoplankton",value=6)
+		tabPanel("Phytoplankton",value=6),
+		tabPanel("Sonde data", value=7), 
+		tabPanel("Wind and turbidity", value=8), 
+		tabPanel("Macrophytes and turbidity", value=9),
+		tabPanel("Water clarity", value=10)
 	),
 
 		
@@ -166,16 +176,16 @@ ui <- fluidPage(
 
 			###Global inputs
 			conditionalPanel(
-				condition="input.tabs!=1 & input.tabs!=6",			
+				condition="input.tabs!=1 & input.tabs!=6 & input.tabs!=7 & input.tabs!=8 & input.tabs!=9 & input.tabs!=10",			
 				sliderInput(inputId="plot_years","Year range:",min=min(wq_data$Year),max=max(wq_data$Year),value=c(1990,max(wq_data$Year)),sep="")
 			),
 			conditionalPanel(
-				condition="input.tabs==1",			
+				condition="input.tabs==1 & input.tabs!=7 & input.tabs!=8 & input.tabs!=9 & input.tabs!=10",			
 				sliderInput(inputId="elev_plot_years","Year range:",min=min(lake_elev_data$Year),max=max(lake_elev_data$Year),value=c(min(lake_elev_data$Year),max(lake_elev_data$Year)),sep="")
 			),
 			
 			conditionalPanel(
-				condition="input.tabs!=1 & input.tabs!=6",
+				condition="input.tabs!=1 & input.tabs!=6 & input.tabs!=7 & input.tabs!=8 & input.tabs!=9 & input.tabs!=10",
 				sliderInput(inputId="plot_months","Month range:",min=min(lake_elev_data$Month),max=max(lake_elev_data$Month),value=c(min(lake_elev_data$Month),max(lake_elev_data$Month)),sep="",step=1),
 				#checkboxGroupInput("sites","Include:",choices=c("Utah Lake","Provo Bay"),selected=c("Utah Lake","Provo Bay"))
 				conditionalPanel(
@@ -322,8 +332,36 @@ ui <- fluidPage(
 				#)
 			),
 
+			
+			### Sonde data tab:
+			conditionalPanel(
+			  condition="input.tabs==7",
+			  sliderInput(inputId="sonde_data_plot_months","Month range:",
+			              min=min(sonde_data$Month,na.rm=T),max=max(sonde_data$Month,na.rm=T),
+			              value=c(4, 9),sep="", step=1),
+			  checkboxGroupInput("sites","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
+			  radioButtons("sonde_data_plot_type", "Plot type:", choiceNames=c("Scatterplot","Boxplot"), choiceValues=c(1,2),inline=T),
+			  selectInput("comp_param_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
+			    
+			),
 
-
+			### Wind and turbidity data tab:
+			conditionalPanel(
+			  condition="input.tabs==8",
+			  helpText("Calculate theoretical shear stress experienced by sediments"),
+			  sliderInput(inputId="shear_calculation_depth","Water depth (m):",
+			              min = 1,max = 10, value = 3, sep="", step=0.5),
+			  sliderInput(inputId="shear_calculation_wind","Wind speed (m/s):",
+			              min = 0,max = 10, value = 2.5, sep="", step=0.5),
+			  sliderInput(inputId="shear_calculation_fetch","Fetch (km):",
+			              min = 5,max = 30, value = 24, sep="", step=1),
+			  helpText("Explore observed conditions in Utah Lake"),
+			  # checkboxGroupInput("stations","Include:",choiceNames=c("North", "Mid", "South", "Provo Bay"),choiceValues=c(1,2,3),selected=c(2, 4),
+			  selectInput("comp_param_x","Parameter x:",choices=wind_data_choices, selected="windspeed.m.s"),
+			  selectInput("comp_param_y","Parameter y:",choices=wind_data_choices, selected="tau.wind"),
+			),
+			
+			
 			###Help text
 			br(),
 			helpText("For help with this tool, or to report a bug, please contact Jake Vander Laan, UDWQ, jvander@utah.gov, (801) 536-4350.")
