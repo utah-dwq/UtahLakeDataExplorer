@@ -52,7 +52,8 @@ library(ipdw)
 library(scales)
 library(rsconnect)
 library(shiny)
-library(ggplot2)
+library(tidyverse)
+library(viridis)
 
 options(scipen=999,digits=5)
 
@@ -93,10 +94,18 @@ sonde_data_choices = c("Temperature", "Chl", "BGA", "pH", "Turbidity")
 names(sonde_data_choices) = c("Temperature (Celsius)", "Chlorophyll a fluorescence (RFU)", 
                               "Phycocyanin fluorescence (RFU)", "pH", "Turbidity (NTU)")
 
-# Define Sonde data parameter choices: 
-wind_data_choices = c("Turbidity.ntu", "windspeed.m.s", "tau.wind")
-names(wind_data_choices) = c("Turbidity (NTU)", "Wind speed (m/s)", "Wave shear (N/m2)")
+# Define Wind data parameter choices: 
+wind_data_choices1 = c("windspeed.m.s", "tau.wind")
+names(wind_data_choices1) = c( "Wind speed (m/s)", "Wave shear (N/m2)")
 
+wind_data_choices2 = c("Turbidity.ntu", "tau.wind")
+names(wind_data_choices2) = c("Turbidity (NTU)", "Wave shear (N/m2)")
+
+# Define Clarity data parameter choices: 
+clarity_data_choices = c("k", "secchidepth.m", "Turbidity", "chlorophyll.pheophytincorrected", 
+                         "organic.carbon", "total.suspended.solids")
+names(clarity_data_choices) = c("k", "Secchi depth (m)", "Turbidity (NTU)", "Chlorophyll a (ug/L)", 
+                                "Dissolved organic carbon (mg/L)", "Total suspended solids (mg/L)")
 
 ###################################*
 #### UI ####
@@ -337,11 +346,14 @@ ui <- fluidPage(
 			conditionalPanel(
 			  condition="input.tabs==7",
 			  sliderInput(inputId="sonde_data_plot_months","Month range:",
-			              min=min(sonde_data$Month,na.rm=T),max=max(sonde_data$Month,na.rm=T),
-			              value=c(4, 9),sep="", step=1),
-			  checkboxGroupInput("sites","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
+			              min=4,max=11,
+			              value=c(1, 12),sep="", step=1),
+			  checkboxGroupInput("sonde_data_stations","Include:",
+			                     choiceNames=c("Utah Lake North (4917365)", "Utah Lake Mid (4917390)", 
+			                                   "Provo Bay (4917446)", "Utah Lake South (4917715)"),
+			               choiceValues = c(4917365, 4917390, 4917446, 4917715), selected = c(4917365, 4917390, 4917446, 4917715)),
 			  radioButtons("sonde_data_plot_type", "Plot type:", choiceNames=c("Scatterplot","Boxplot"), choiceValues=c(1,2),inline=T),
-			  selectInput("comp_param_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
+			  selectInput("sonde_choice_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
 			    
 			),
 
@@ -356,11 +368,39 @@ ui <- fluidPage(
 			  sliderInput(inputId="shear_calculation_fetch","Fetch (km):",
 			              min = 5,max = 30, value = 24, sep="", step=1),
 			  helpText("Explore observed conditions in Utah Lake"),
-			  # checkboxGroupInput("stations","Include:",choiceNames=c("North", "Mid", "South", "Provo Bay"),choiceValues=c(1,2,3),selected=c(2, 4),
-			  selectInput("comp_param_x","Parameter x:",choices=wind_data_choices, selected="windspeed.m.s"),
-			  selectInput("comp_param_y","Parameter y:",choices=wind_data_choices, selected="tau.wind"),
+			  checkboxGroupInput("wind_data_stations","Include:",
+			                     choiceNames=c("Utah Lake North (4917365)", "Utah Lake Mid (4917390)", 
+			                                   "Provo Bay (4917446)", "Utah Lake South (4917715)"),
+			                     choiceValues = c(4917365, 4917390, 4917446, 4917715), selected = c(4917365, 4917390, 4917446, 4917715)),
+			  selectInput("wind_choice_x","Parameter x:",choices=wind_data_choices1, selected="windspeed.m.s"),
+			  selectInput("wind_choice_y","Parameter y:",choices=wind_data_choices2, selected="tau.wind"),
 			),
 			
+			### Turbidity and macrophytes data tab:
+			conditionalPanel(
+			  condition="input.tabs==9",
+			  helpText("Simulate the reduction in wave shear by macrophytes"),
+			  sliderInput(inputId="shear_reduction","% Reduction:",
+			              min = 0, max = 80, value = 0, sep="", step=5),
+			  checkboxGroupInput("sites","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
+			),
+			
+			### Light extinction data tab:
+			conditionalPanel(
+			  condition="input.tabs==10",
+			  helpText(""),
+			  sliderInput(inputId="sonde_data_plot_months","Month range:",
+			              min=min(sonde_data$Month,na.rm=T),max=max(sonde_data$Month,na.rm=T),
+			              value=c(4, 9),sep="", step=1),
+			  checkboxGroupInput("sonde_data_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
+			  helpText(""),
+			  selectInput("comp_param_x","Parameter x:",choices=clarity_data_choices, selected="secchidepth.m"),
+			  selectInput("comp_param_y","Parameter y:",choices=clarity_data_choices, selected="k"),
+			  radioButtons(inputId = "light_fit",
+			               label = "Line of best fit",
+			               choiceNames=c("On","Off"),
+			               choiceValues=c(1,0),selected=0,inline=TRUE),
+			),		
 			
 			###Help text
 			br(),
@@ -398,7 +438,21 @@ ui <- fluidPage(
 			conditionalPanel(
 				condition="input.tabs==6 & input.phyto_plot_type==2",
 				leafletOutput("phyto_map_output",width="800px",height="800px")
+			), 
+			conditionalPanel(
+			  condition = "input.tabs == 7 & input.sonde_data_plot_type == 1",
+			  plotOutput("sonde_data_scatterplot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 7 & input.sonde_data_plot_type == 2",
+			  plotOutput("sonde_data_boxplot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 8",
+			  withMathJax("$$\\text{Display formula in heading }X_n=X_{n-1}-\\varepsilon$$"),
+			  plotOutput("wind_data_plot", width="800px", height="500px")
 			)
+			
 
 		)
 		
@@ -661,7 +715,19 @@ server <- function(input, output){
 		selectInput("division","Algal division:",choices=unique(phyto_data$Division)[order(unique(phyto_data$Division))], selected=input$division,selectize=T)
 	})
 	
+
+	filtered_sonde_data <- reactive({
+	  sonde_data %>%
+	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
+	    filter(SiteCode %in% input$sonde_data_stations)
+	    # filter(if(input$sonde_data_stations == 1) {SiteCode != 4917446} else 
+	    #   if(input$sonde_data_stations == 2) {SiteCode == 4917390} else {SiteCode == 4917446})
+	})
 	
+	filtered_wind_data <- reactive({
+	  wind_data %>%
+	    filter(SiteCode %in% input$wind_data_stations)
+	})	
 		
 	#Tab 1: Elevation plot outputs
 	output$elev_plot=renderPlot({
@@ -1150,7 +1216,47 @@ server <- function(input, output){
 		}	
 
 	})
+
 	
+	#Tab 7: Sonde plot outputs
+
+	output$sonde_data_scatterplot <- renderPlot({
+	    ggplot(data = filtered_sonde_data(), 
+	           aes_string(x = "date", y = input$sonde_choice_y, color = "as.factor(SiteCode)")) +
+	      geom_point(size = 2, alpha = 0.8) +
+	      scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	      scale_x_date(date_breaks = "2 months", date_labels = "%b-%y") +
+	      theme_classic(base_size = 20) +
+	      theme(legend.position = "top") +
+	      labs(x = "", color = "Station")
+	})
+	
+	output$sonde_data_boxplot <- renderPlot({
+	  ggplot(data = filtered_sonde_data(), 
+	         aes_string(x = "as.factor(Month)", y = input$sonde_choice_y, fill = "as.factor(SiteCode)")) +
+	      geom_boxplot(alpha = 0.8) +
+	      scale_fill_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	      theme_classic(base_size = 20) +
+	      theme(legend.position = "top") +
+	      labs(x = "Month", fill = "Station")
+	  
+	})
+	
+	# Tab 8: Wind plot outputs
+	
+	output$wind_data_plot <- renderPlot({
+	  ggplot(data = filtered_wind_data(), 
+	         aes_string(x = input$wind_choice_x, y = input$wind_choice_y,  color = "as.factor(SiteCode)")) +
+	    geom_point(alpha = 0.8, size = 2) + 
+	    scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	    labs(color = "Station") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top") +
+	    if(input$wind_choice_x == "tau.wind") {geom_vline(xintercept = 0.16, lty = 2, size = 1)} else
+	    if(input$wind_choice_y == "tau.wind") {geom_hline(yintercept = 0.16, lty = 2, size = 1)}
+	    
+	})
+		
 }
 
 # Run app
