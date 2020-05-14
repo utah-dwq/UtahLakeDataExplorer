@@ -102,10 +102,13 @@ wind_data_choices2 = c("Turbidity.ntu", "tau.wind")
 names(wind_data_choices2) = c("Turbidity (NTU)", "Wave shear (N/m2)")
 
 # Define Clarity data parameter choices: 
-clarity_data_choices = c("k", "secchidepth.m", "Turbidity", "chlorophyll.pheophytincorrected", 
+clarity_data_choices_x = c("secchidepth.m", "Turbidity", "chlorophyll.pheophytincorrected", 
                          "organic.carbon", "total.suspended.solids")
-names(clarity_data_choices) = c("k", "Secchi depth (m)", "Turbidity (NTU)", "Chlorophyll a (ug/L)", 
+names(clarity_data_choices_x) = c("Secchi depth (m)", "Turbidity (NTU)", "Chlorophyll a (ug/L)", 
                                 "Dissolved organic carbon (mg/L)", "Total suspended solids (mg/L)")
+
+clarity_data_choices_y = c("k", "secchidepth.m")
+names(clarity_data_choices_y) = c("k", "Secchi depth (m)")
 
 ###################################*
 #### UI ####
@@ -382,25 +385,25 @@ ui <- fluidPage(
 			  helpText("Simulate the reduction in wave shear by macrophytes"),
 			  sliderInput(inputId="shear_reduction","% Reduction:",
 			              min = 0, max = 80, value = 0, sep="", step=5),
-			  checkboxGroupInput("sites","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
+			  radioButtons("macrophyte_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
 			),
 			
-			### Light extinction data tab:
+			## Light extinction data tab:
 			conditionalPanel(
 			  condition="input.tabs==10",
 			  helpText(""),
-			  sliderInput(inputId="sonde_data_plot_months","Month range:",
-			              min=min(sonde_data$Month,na.rm=T),max=max(sonde_data$Month,na.rm=T),
+			  sliderInput(inputId="PAR_data_plot_months","Month range:",
+			              min=min(PAR_data$Month,na.rm=T),max=max(PAR_data$Month,na.rm=T),
 			              value=c(4, 9),sep="", step=1),
-			  checkboxGroupInput("sonde_data_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
+			  radioButtons("PAR_data_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
 			  helpText(""),
-			  selectInput("comp_param_x","Parameter x:",choices=clarity_data_choices, selected="secchidepth.m"),
-			  selectInput("comp_param_y","Parameter y:",choices=clarity_data_choices, selected="k"),
+			  selectInput("clarity_choice_x","Parameter x:",choices=clarity_data_choices_x, selected="secchidepth.m"),
+			  selectInput("clarity_choice_y","Parameter y:",choices=clarity_data_choices_y, selected="k"),
 			  radioButtons(inputId = "light_fit",
 			               label = "Line of best fit",
 			               choiceNames=c("On","Off"),
 			               choiceValues=c(1,0),selected=0,inline=TRUE),
-			),		
+			),
 			
 			###Help text
 			br(),
@@ -451,8 +454,40 @@ ui <- fluidPage(
 			  condition = "input.tabs == 8",
 			  withMathJax("$$\\text{Display formula in heading }X_n=X_{n-1}-\\varepsilon$$"),
 			  plotOutput("wind_data_plot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 9 & input.macrophyte_stations == 1",
+			  textOutput("shear_exceeded_utah"),
+			  plotOutput("macrophyte_data_plot_utah", width="800px", height="500px")
+			), 
+			conditionalPanel(
+			  condition = "input.tabs == 9 & input.macrophyte_stations == 2",
+			  textOutput("shear_exceeded_provo"),
+			  plotOutput("macrophyte_data_plot_provo", width="800px", height="500px")
+			), 
+			conditionalPanel(
+			  condition = "input.tabs == 9 & input.macrophyte_stations == 3",
+			  textOutput("shear_exceeded"),
+			  plotOutput("macrophyte_data_plot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 10 & input.PAR_data_stations == 1",
+			  plotOutput("PAR_data_plot_utah", width="800px", height="600px"),
+			  plotOutput("clarity_data_plot_utah",  width="400px", height="400px")
+
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 10 & input.PAR_data_stations == 2",
+			  plotOutput("PAR_data_plot_provo", width="800px", height="600px"),
+			  plotOutput("clarity_data_plot_provo",  width="400px", height="400px")
+
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 10 & input.PAR_data_stations == 3",
+			  plotOutput("PAR_data_plot", width="800px", height="600px"),
+			  plotOutput("clarity_data_plot",  width="400px", height="400px")
+
 			)
-			
 
 		)
 		
@@ -718,16 +753,91 @@ server <- function(input, output){
 
 	filtered_sonde_data <- reactive({
 	  sonde_data %>%
-	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
-	    filter(SiteCode %in% input$sonde_data_stations)
-	    # filter(if(input$sonde_data_stations == 1) {SiteCode != 4917446} else 
-	    #   if(input$sonde_data_stations == 2) {SiteCode == 4917390} else {SiteCode == 4917446})
+	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2])
 	})
 	
 	filtered_wind_data <- reactive({
 	  wind_data %>%
 	    filter(SiteCode %in% input$wind_data_stations)
 	})	
+	
+	adjusted_wind_data <- reactive({
+	  wind_data %>%
+	    mutate(tau.wind.calculated = tau.wind * (100-input$shear_reduction)/100)
+	})
+	
+	samples_exceeding_critical_shear <- reactive({
+	  adjusted_wind_data() %>%
+	  drop_na(tau.wind.calculated) %>%
+	  summarise(percent = length(tau.wind.calculated[tau.wind.calculated >0.16])/length(tau.wind.calculated)*100) %>%
+	    round(2)
+	})
+	
+
+	adjusted_wind_data_provo <- reactive({
+	  wind_data %>%
+	    filter(SiteCode == 4917446) %>%
+	    mutate(tau.wind.calculated = tau.wind * (100-input$shear_reduction)/100)
+	})
+	
+	samples_exceeding_critical_shear_provo <- reactive({
+	  adjusted_wind_data_provo() %>%
+	    drop_na(tau.wind.calculated) %>%
+	    summarise(percent = length(tau.wind.calculated[tau.wind.calculated >0.16])/length(tau.wind.calculated)*100) %>%
+	    round(2)
+	})
+
+	adjusted_wind_data_utah <- reactive({
+	  wind_data %>%
+	    filter(SiteCode != 4917446) %>%
+	    mutate(tau.wind.calculated = tau.wind * (100-input$shear_reduction)/100)
+	})
+	
+	samples_exceeding_critical_shear_utah <- reactive({
+	  adjusted_wind_data_utah() %>%
+	    drop_na(tau.wind.calculated) %>%
+	    summarise(percent = length(tau.wind.calculated[tau.wind.calculated >0.16])/length(tau.wind.calculated)*100) %>%
+	    round(2)
+	})
+
+	filtered_PAR_data <- reactive({
+	  PAR_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2])
+	})
+
+	filtered_PAR_data_provo <- reactive({
+	  PAR_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2]) %>%
+	    filter(MonitoringLocationIdentifier %in% c(4917775, 4917452, 4917458, 4917450, 4917455,
+	                                               4917460, 4917454, 4917470, 4917450, 4917470))
+	})
+
+	filtered_PAR_data_utah <- reactive({
+	  PAR_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2]) %>%
+	    filter(!(MonitoringLocationIdentifier %in% c(4917775, 4917452, 4917458, 4917450, 4917455,
+	                                                 4917460, 4917454, 4917470, 4917450, 4917470)))
+	})
+	
+	filtered_clarity_data <- reactive({
+	  clarity_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2])
+	})
+	
+	filtered_clarity_data_provo <- reactive({
+	  clarity_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2] )%>%
+	    filter(MonitoringLocationIdentifier %in% c(4917775, 4917452, 4917458, 4917450, 4917455,
+	                                                 4917460, 4917454, 4917470, 4917450, 4917470))
+	  
+	})
+	
+	filtered_clarity_data_utah <- reactive({
+	  clarity_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2]) %>%
+	    filter(!(MonitoringLocationIdentifier %in% c(4917775, 4917452, 4917458, 4917450, 4917455,
+	                                                 4917460, 4917454, 4917470, 4917450, 4917470)))
+	})
 		
 	#Tab 1: Elevation plot outputs
 	output$elev_plot=renderPlot({
@@ -1228,7 +1338,8 @@ server <- function(input, output){
 	      scale_x_date(date_breaks = "2 months", date_labels = "%b-%y") +
 	      theme_classic(base_size = 20) +
 	      theme(legend.position = "top") +
-	      labs(x = "", color = "Station")
+	      labs(x = "", color = "Station", 
+	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))
 	})
 	
 	output$sonde_data_boxplot <- renderPlot({
@@ -1238,7 +1349,8 @@ server <- function(input, output){
 	      scale_fill_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
 	      theme_classic(base_size = 20) +
 	      theme(legend.position = "top") +
-	      labs(x = "Month", fill = "Station")
+	      labs(x = "Month", fill = "Station", 
+	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))
 	  
 	})
 	
@@ -1249,13 +1361,136 @@ server <- function(input, output){
 	         aes_string(x = input$wind_choice_x, y = input$wind_choice_y,  color = "as.factor(SiteCode)")) +
 	    geom_point(alpha = 0.8, size = 2) + 
 	    scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
-	    labs(color = "Station") +
+	    labs(color = "Station", 
+	         x = paste("\n", names(wind_data_choices1[wind_data_choices1 == input$wind_choice_x])),  
+	         y = paste("\n", names(wind_data_choices2[wind_data_choices2 == input$wind_choice_y]))) +
 	    theme_classic(base_size = 20) +
 	    theme(legend.position = "top") +
 	    if(input$wind_choice_x == "tau.wind") {geom_vline(xintercept = 0.16, lty = 2, size = 1)} else
 	    if(input$wind_choice_y == "tau.wind") {geom_hline(yintercept = 0.16, lty = 2, size = 1)}
 	    
 	})
+	
+#	Tab 9: Macrophyte plot outputs
+	output$shear_exceeded <- renderText({
+	  paste(samples_exceeding_critical_shear(), "% of samples exceed critical shear")
+	})
+	
+	output$macrophyte_data_plot <- renderPlot({
+	  ggplot(data = adjusted_wind_data(), 
+	         aes_string(x = "tau.wind.calculated")) +
+	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
+	    labs(x = expression("Wave shear (N/m"^2*")")) +
+	  	theme_classic(base_size = 20) +
+	    scale_x_continuous(expand = c(0, 0)) + 
+	    scale_y_continuous(expand = c(0, 0))
+	})
+	
+	output$shear_exceeded_provo <- renderText({
+	  paste(samples_exceeding_critical_shear_provo(), "% of samples exceed critical shear")
+	})
+	
+	output$macrophyte_data_plot_provo <- renderPlot({
+	  ggplot(data = adjusted_wind_data_provo(), 
+	         aes_string(x = "tau.wind.calculated")) +
+	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
+	    theme_classic(base_size = 20) +
+	    scale_x_continuous(expand = c(0, 0)) + 
+	    scale_y_continuous(expand = c(0, 0))
+	})
+	
+	output$shear_exceeded_utah <- renderText({
+	  paste(samples_exceeding_critical_shear_utah(), "% of samples exceed critical shear")
+	})
+	
+	output$macrophyte_data_plot_utah <- renderPlot({
+	  ggplot(data = adjusted_wind_data_utah(), 
+	         aes_string(x = "tau.wind.calculated")) +
+	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
+	    theme_classic(base_size = 20) +
+	    scale_x_continuous(expand = c(0, 0)) + 
+	    scale_y_continuous(expand = c(0, 0))
+	})
+	
+	
+	# Tab 10: Light and Clarity
+	output$PAR_data_plot <- renderPlot({
+	  ggplot(filtered_PAR_data(), aes_string(x = "ResultMeasureValue", y = "SampleDepthValue", color = "Month")) +
+	    geom_point(size = 3) +
+	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
+	    scale_y_reverse() +
+	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top")
+	})
+	
+	output$PAR_data_plot_provo <- renderPlot({
+	  ggplot(filtered_PAR_data_provo(), aes_string(x = "ResultMeasureValue", y = "SampleDepthValue", color = "Month")) +
+	    geom_point(size = 3) +
+	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
+	    scale_y_reverse() +
+	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top")
+	})
+	
+	output$PAR_data_plot_utah <- renderPlot({
+	  ggplot(filtered_PAR_data_utah(), aes_string(x = "ResultMeasureValue", y = "SampleDepthValue", color = "Month")) +
+	    geom_point(size = 3) +
+	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
+	    scale_y_reverse() +
+	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top")
+	})
+	
+	output$clarity_data_plot <- renderPlot({
+	  ggplot(data = filtered_clarity_data(),
+	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
+	    geom_point(size = 3) +
+	    scale_y_reverse() +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
+	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "none")
+	})
+	
+	clarity_data_choices_x
+	
+	output$clarity_data_plot_provo <- renderPlot({
+	  ggplot(data = filtered_clarity_data_provo(),
+	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
+	    geom_point(size = 3) +
+	    scale_y_reverse() +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
+	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "none")
+	})
+	
+	output$clarity_data_plot_utah <- renderPlot({
+	  ggplot(data = filtered_clarity_data_utah(),
+	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
+	    geom_point(size = 3) +
+	    scale_y_reverse() +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
+	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "none")
+	})
+
 		
 }
 
