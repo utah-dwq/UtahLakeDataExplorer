@@ -102,9 +102,9 @@ wind_data_choices2 = c("Turbidity.ntu", "tau.wind")
 names(wind_data_choices2) = c("Turbidity (NTU)", "Wave shear (N/m2)")
 
 # Define Clarity data parameter choices: 
-clarity_data_choices_x = c("secchidepth.m", "Turbidity", "chlorophyll.pheophytincorrected", 
+clarity_data_choices_x = c("Turbidity", "chlorophyll.pheophytincorrected", 
                          "organic.carbon", "total.suspended.solids")
-names(clarity_data_choices_x) = c("Secchi depth (m)", "Turbidity (NTU)", "Chlorophyll a (ug/L)", 
+names(clarity_data_choices_x) = c("Turbidity (NTU)", "Chlorophyll a (ug/L)", 
                                 "Dissolved organic carbon (mg/L)", "Total suspended solids (mg/L)")
 
 clarity_data_choices_y = c("k", "secchidepth.m")
@@ -397,7 +397,7 @@ ui <- fluidPage(
 			              value=c(4, 9),sep="", step=1),
 			  radioButtons("PAR_data_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
 			  helpText(""),
-			  selectInput("clarity_choice_x","Parameter x:",choices=clarity_data_choices_x, selected="secchidepth.m"),
+			  selectInput("clarity_choice_x","Parameter x:",choices=clarity_data_choices_x, selected="Turbidity"),
 			  selectInput("clarity_choice_y","Parameter y:",choices=clarity_data_choices_y, selected="k"),
 			  radioButtons(inputId = "light_fit",
 			               label = "Line of best fit",
@@ -453,6 +453,7 @@ ui <- fluidPage(
 			conditionalPanel(
 			  condition = "input.tabs == 8",
 			  withMathJax("$$\\text{Display formula in heading }X_n=X_{n-1}-\\varepsilon$$"),
+			  textOutput("theoretical_wave_shear"),
 			  plotOutput("wind_data_plot", width="800px", height="500px")
 			),
 			conditionalPanel(
@@ -753,13 +754,35 @@ server <- function(input, output){
 
 	filtered_sonde_data <- reactive({
 	  sonde_data %>%
-	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2])
+	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
+	    filter(SiteCode %in% input$sonde_data_stations)
+	  
 	})
 	
 	filtered_wind_data <- reactive({
 	  wind_data %>%
 	    filter(SiteCode %in% input$wind_data_stations)
 	})	
+	
+	theoretical_wave_shear <- reactive({
+	    round(digits = 4, 
+	          ((input$shear_calculation_wind^2/9.80665) * 
+	           (0.283*tanh(0.53*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/4)) *
+	            tanh(0.00565*(9.80665*input$shear_calculation_fetch*1000/(input$shear_calculation_wind^2))^(0.5)/
+	            (tanh(0.53*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)))))) * 1000 * 
+	            ((0.00000105324176448 * (2*pi/((input$shear_calculation_wind/9.80665) * 
+	            (7.54*tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)) *
+	             tanh(0.0379*(9.80665*input$shear_calculation_fetch*1000/(input$shear_calculation_wind^2))^(0.5)/
+	             (tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)))))))^3)^(0.5))/
+	            (2*sinh(2*pi*input$shear_calculation_depth/(9.80665 * ((input$shear_calculation_wind/9.80665) * 
+	             (7.54*tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)) *
+	             tanh(0.0379*(9.80665*input$shear_calculation_fetch*1000/(input$shear_calculation_wind^2))^(0.5)/
+	             (tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8))))))^2 / (2*pi) * 
+	             sqrt(tanh((4*pi^2*input$shear_calculation_depth/(((input$shear_calculation_wind/9.80665) * 
+	             (7.54*tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)) *
+	              tanh(0.0379*(9.80665*input$shear_calculation_fetch*1000/(input$shear_calculation_wind^2))^(0.5)/
+	              (tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8))))))^2*9.80665))))))))
+	})
 	
 	adjusted_wind_data <- reactive({
 	  wind_data %>%
@@ -1337,7 +1360,7 @@ server <- function(input, output){
 	      scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
 	      scale_x_date(date_breaks = "2 months", date_labels = "%b-%y") +
 	      theme_classic(base_size = 20) +
-	      theme(legend.position = "top") +
+	      theme(legend.position = "top", axis.text.x = element_text(angle = 45, hjust = 1)) +
 	      labs(x = "", color = "Station", 
 	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))
 	})
@@ -1355,6 +1378,11 @@ server <- function(input, output){
 	})
 	
 	# Tab 8: Wind plot outputs
+	
+	
+	output$theoretical_wave_shear <- renderText({
+	  paste("Theoretical wave shear (N/m2) = ", theoretical_wave_shear())
+	})
 	
 	output$wind_data_plot <- renderPlot({
 	  ggplot(data = filtered_wind_data(), 
@@ -1452,17 +1480,20 @@ server <- function(input, output){
 	    theme_classic(base_size = 20) +
 	    theme(legend.position = "top")
 	})
-	
+	  
 	output$clarity_data_plot <- renderPlot({
 	  ggplot(data = filtered_clarity_data(),
 	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
 	    geom_point(size = 3) +
-	    scale_y_reverse() +
 	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
 	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
 	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
 	    theme_classic(base_size = 20) +
-	    theme(legend.position = "none")
+	    theme(legend.position = "none") +
+	    if(input$clarity_choice_y == "k" & input$light_fit == 1) 
+	    {geom_smooth(method = lm, se = FALSE, color = "black")} else
+	      if(input$clarity_choice_y == "secchidepth.m" & input$light_fit == 1) 
+	      {geom_smooth(method = lm, se = FALSE, color = "black", formula = y ~ log(x))}
 	})
 	
 	clarity_data_choices_x
