@@ -1,3 +1,4 @@
-
 *.dcf
 .Rproj.user
+.Rhistory
+UtahLakeDataExplorer.Rproj

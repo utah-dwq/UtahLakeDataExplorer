@@ -52,6 +52,8 @@ library(ipdw)
 library(scales)
 library(rsconnect)
 library(shiny)
+library(tidyverse)
+library(viridis)
 
 options(scipen=999,digits=5)
 
@@ -71,7 +73,7 @@ source('functions/ipdwMap.R')
 
 # Get filenames
 tmp=list.files('RDataFiles',pattern='*.RData',full.names=T)
-length(tmp) # 6 files
+length(tmp) # 10 files
 
 # Load all .RData files
 lapply(tmp,load,.GlobalEnv)
@@ -87,10 +89,26 @@ lapply(tmp,load,.GlobalEnv)
 nla_comp_choices=c('Phosphate-phosphorus','Chlorophyll a','Depth, Secchi disk depth','Total_nitrogen_mgL')
 names(nla_comp_choices)=c('Total phosphorus (mg/L)','Chlorophyll a (ug/L)','Secchi depth (m)','Total nitrogen (mg/L)')
 
+# Define Sonde data parameter choices: 
+sonde_data_choices = c("Temperature", "Chl", "BGA", "pH", "Turbidity")
+names(sonde_data_choices) = c("Temperature (Celsius)", "Chlorophyll a fluorescence (RFU)", 
+                              "Phycocyanin fluorescence (RFU)", "pH", "Turbidity (NTU)")
 
+# Define Wind data parameter choices: 
+wind_data_choices1 = c("windspeed.m.s", "tau.wind")
+names(wind_data_choices1) = c( "Wind speed (m/s)", "Wave shear (N/m2)")
 
+wind_data_choices2 = c("Turbidity.ntu", "tau.wind")
+names(wind_data_choices2) = c("Turbidity (NTU)", "Wave shear (N/m2)")
 
+# Define Clarity data parameter choices: 
+clarity_data_choices_x = c("Turbidity", "chlorophyll.pheophytincorrected", 
+                         "organic.carbon", "total.suspended.solids")
+names(clarity_data_choices_x) = c("Turbidity (NTU)", "Chlorophyll a (ug/L)", 
+                                "Dissolved organic carbon (mg/L)", "Total suspended solids (mg/L)")
 
+clarity_data_choices_y = c("k", "secchidepth.m")
+names(clarity_data_choices_y) = c("k", "Secchi depth (m)")
 
 ###################################*
 #### UI ####
@@ -124,7 +142,11 @@ ui <- fluidPage(
 		tabPanel("Trophic state",value=3),
 		tabPanel("NLA comparison",value=4),
 		tabPanel("Water quality map",value=5),
-		tabPanel("Phytoplankton",value=6)
+		tabPanel("Phytoplankton",value=6),
+		tabPanel("Sonde data", value=7), 
+		tabPanel("Wind and turbidity", value=8), 
+		tabPanel("Macrophytes and turbidity", value=9),
+		tabPanel("Water clarity", value=10)
 	),
 
 		
@@ -166,16 +188,16 @@ ui <- fluidPage(
 
 			###Global inputs
 			conditionalPanel(
-				condition="input.tabs!=1 & input.tabs!=6",			
+				condition="input.tabs!=1 & input.tabs!=6 & input.tabs!=7 & input.tabs!=8 & input.tabs!=9 & input.tabs!=10",			
 				sliderInput(inputId="plot_years","Year range:",min=min(wq_data$Year),max=max(wq_data$Year),value=c(1990,max(wq_data$Year)),sep="")
 			),
 			conditionalPanel(
-				condition="input.tabs==1",			
+				condition="input.tabs==1 & input.tabs!=7 & input.tabs!=8 & input.tabs!=9 & input.tabs!=10",			
 				sliderInput(inputId="elev_plot_years","Year range:",min=min(lake_elev_data$Year),max=max(lake_elev_data$Year),value=c(min(lake_elev_data$Year),max(lake_elev_data$Year)),sep="")
 			),
 			
 			conditionalPanel(
-				condition="input.tabs!=1 & input.tabs!=6",
+				condition="input.tabs!=1 & input.tabs!=6 & input.tabs!=7 & input.tabs!=8 & input.tabs!=9 & input.tabs!=10",
 				sliderInput(inputId="plot_months","Month range:",min=min(lake_elev_data$Month),max=max(lake_elev_data$Month),value=c(min(lake_elev_data$Month),max(lake_elev_data$Month)),sep="",step=1),
 				#checkboxGroupInput("sites","Include:",choices=c("Utah Lake","Provo Bay"),selected=c("Utah Lake","Provo Bay"))
 				conditionalPanel(
@@ -322,8 +344,79 @@ ui <- fluidPage(
 				#)
 			),
 
+			
+			### Sonde data tab:
+			conditionalPanel(
+			  condition="input.tabs==7",
+			  helpText("This tool shows the conditions across sites in Utah Lake as measured by sensors deployed on sondes. 
+			           Data were collected in 15-minute intervals and averaged into daily values."),
+			  sliderInput(inputId="sonde_data_plot_months","Month range:",
+			              min=4,max=11,
+			              value=c(1, 12),sep="", step=1),
+			  checkboxGroupInput("sonde_data_stations","Include:",
+			                     choiceNames=c("Utah Lake North (4917365)", "Utah Lake Mid (4917390)", 
+			                                   "Provo Bay (4917446)", "Utah Lake South (4917715)"),
+			               choiceValues = c(4917365, 4917390, 4917446, 4917715), selected = c(4917365, 4917390, 4917446, 4917715)),
+			  radioButtons("sonde_data_plot_type", "Plot type:", choiceNames=c("Scatterplot","Boxplot"), choiceValues=c(1,2),inline=T),
+			  selectInput("sonde_choice_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
+			    
+			),
 
-
+			### Wind and turbidity data tab:
+			conditionalPanel(
+			  condition="input.tabs==8",
+			  helpText("Sediments can be resuspended into the water column in response to waves and currents (shear stress),
+			           resulting in high turbidity and reduced clarity.
+			           This tool explores the theoretical and observational relationships between turbidity, wind speed, 
+			           and shear stress due to wave activity."),
+			  helpText("Theoretical tool: calculate wave shear experienced by sediments in response to changing wind and basin shape."),
+			  sliderInput(inputId="shear_calculation_depth","Water depth (m):",
+			              min = 1,max = 10, value = 3, sep="", step=0.5),
+			  sliderInput(inputId="shear_calculation_wind","Wind speed (m/s):",
+			              min = 0,max = 10, value = 2.5, sep="", step=0.5),
+			  sliderInput(inputId="shear_calculation_fetch","Fetch (km):",
+			              min = 5,max = 30, value = 24, sep="", step=1),
+			  helpText("Observational tool: explore actual conditions in Utah Lake as measured by sensors on a data sonde. 
+			           The dotted line on the wave shear axis represents critical shear, the shear value at which sediments are resuspended."),
+			  checkboxGroupInput("wind_data_stations","Include:",
+			                     choiceNames=c("Utah Lake North (4917365)", "Utah Lake Mid (4917390)", 
+			                                   "Provo Bay (4917446)", "Utah Lake South (4917715)"),
+			                     choiceValues = c(4917365, 4917390, 4917446, 4917715), selected = c(4917365, 4917390, 4917446, 4917715)),
+			  selectInput("wind_choice_x","Parameter x:",choices=wind_data_choices1, selected="windspeed.m.s"),
+			  selectInput("wind_choice_y","Parameter y:",choices=wind_data_choices2, selected="tau.wind"),
+			),
+			
+			### Turbidity and macrophytes data tab:
+			conditionalPanel(
+			  condition="input.tabs==9",
+			  helpText("Submerged aquatic vegetation (macrophytes) reduces the shear experienced by the sediments by reducing wave action.
+			           This tool calculates the wave shear from observed dates based on the theoretical reduction provided by macrophytes."),
+			  helpText("The vertical line represents the critical shear, the shear value at which sediments are resuspended.
+			           Observations below critical shear will not experience sediment resuspension due to wave action."),
+			  sliderInput(inputId="shear_reduction","% Reduction:",
+			              min = 0, max = 80, value = 0, sep="", step=5),
+			  radioButtons("macrophyte_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
+			),
+			
+			## Light extinction data tab:
+			conditionalPanel(
+			  condition="input.tabs==10",
+			  helpText("This tool illustrates the rapid attenuation of light with depth in Utah Lake. 
+			           Light is measured as photosynthetically active radiation (PAR)."),
+			  sliderInput(inputId="PAR_data_plot_months","Month range:",
+			              min=min(PAR_data$Month,na.rm=T),max=max(PAR_data$Month,na.rm=T),
+			              value=c(4, 9),sep="", step=1),
+			  radioButtons("PAR_data_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
+			  helpText("The degree of light attenuation can be measured by the light attenuation coefficient (k)
+			           and Secchi depth. Both of these metrics are related to light absorbing and light scattering consituents in the water column."),
+			  selectInput("clarity_choice_x","Parameter x:",choices=clarity_data_choices_x, selected="Turbidity"),
+			  selectInput("clarity_choice_y","Parameter y:",choices=clarity_data_choices_y, selected="k"),
+			  radioButtons(inputId = "light_fit",
+			               label = "Line of best fit",
+			               choiceNames=c("On","Off"),
+			               choiceValues=c(1,0),selected=0,inline=TRUE),
+			),
+			
 			###Help text
 			br(),
 			helpText("For help with this tool, or to report a bug, please contact Jake Vander Laan, UDWQ, jvander@utah.gov, (801) 536-4350.")
@@ -360,6 +453,68 @@ ui <- fluidPage(
 			conditionalPanel(
 				condition="input.tabs==6 & input.phyto_plot_type==2",
 				leafletOutput("phyto_map_output",width="800px",height="800px")
+			), 
+			conditionalPanel(
+			  condition = "input.tabs == 7 & input.sonde_data_plot_type == 1",
+			  plotOutput("sonde_data_scatterplot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 7 & input.sonde_data_plot_type == 2",
+			  plotOutput("sonde_data_boxplot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 8",
+			  br(),
+			  br(),
+			  withMathJax(uiOutput("theoretical_wave_shear")),
+			  br(),
+			  br(),
+			  plotOutput("wind_data_plot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 9 & input.macrophyte_stations == 1",
+			  br(),
+			  br(),
+			  textOutput("shear_exceeded_utah"),
+			  br(),
+			  br(),
+			  plotOutput("macrophyte_data_plot_utah", width="800px", height="500px")
+			), 
+			conditionalPanel(
+			  condition = "input.tabs == 9 & input.macrophyte_stations == 2",
+			  br(),
+			  br(),
+			  textOutput("shear_exceeded_provo"),
+			  br(),
+			  br(),
+			  plotOutput("macrophyte_data_plot_provo", width="800px", height="500px")
+			), 
+			conditionalPanel(
+			  condition = "input.tabs == 9 & input.macrophyte_stations == 3",
+			  br(),
+			  br(),
+			  textOutput("shear_exceeded"),
+			  br(),
+			  br(),
+			  plotOutput("macrophyte_data_plot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 10 & input.PAR_data_stations == 1",
+			  plotOutput("PAR_data_plot_utah", width="800px", height="600px"),
+			  plotOutput("clarity_data_plot_utah",  width="400px", height="400px")
+
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 10 & input.PAR_data_stations == 2",
+			  plotOutput("PAR_data_plot_provo", width="800px", height="600px"),
+			  plotOutput("clarity_data_plot_provo",  width="400px", height="400px")
+
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 10 & input.PAR_data_stations == 3",
+			  plotOutput("PAR_data_plot", width="800px", height="600px"),
+			  plotOutput("clarity_data_plot",  width="400px", height="400px")
+
 			)
 
 		)
@@ -623,7 +778,116 @@ server <- function(input, output){
 		selectInput("division","Algal division:",choices=unique(phyto_data$Division)[order(unique(phyto_data$Division))], selected=input$division,selectize=T)
 	})
 	
+
+	filtered_sonde_data <- reactive({
+	  sonde_data %>%
+	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
+	    filter(SiteCode %in% input$sonde_data_stations)
+	  
+	})
 	
+	filtered_wind_data <- reactive({
+	  wind_data %>%
+	    filter(SiteCode %in% input$wind_data_stations)
+	})	
+	
+	theoretical_wave_shear <- reactive({
+	    round(digits = 4, 
+	          ((input$shear_calculation_wind^2/9.80665) * 
+	           (0.283*tanh(0.53*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/4)) *
+	            tanh(0.00565*(9.80665*input$shear_calculation_fetch*1000/(input$shear_calculation_wind^2))^(0.5)/
+	            (tanh(0.53*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)))))) * 1000 * 
+	            ((0.00000105324176448 * (2*pi/((input$shear_calculation_wind/9.80665) * 
+	            (7.54*tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)) *
+	             tanh(0.0379*(9.80665*input$shear_calculation_fetch*1000/(input$shear_calculation_wind^2))^(0.5)/
+	             (tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)))))))^3)^(0.5))/
+	            (2*sinh(2*pi*input$shear_calculation_depth/(9.80665 * ((input$shear_calculation_wind/9.80665) * 
+	             (7.54*tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)) *
+	             tanh(0.0379*(9.80665*input$shear_calculation_fetch*1000/(input$shear_calculation_wind^2))^(0.5)/
+	             (tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8))))))^2 / (2*pi) * 
+	             sqrt(tanh((4*pi^2*input$shear_calculation_depth/(((input$shear_calculation_wind/9.80665) * 
+	             (7.54*tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8)) *
+	              tanh(0.0379*(9.80665*input$shear_calculation_fetch*1000/(input$shear_calculation_wind^2))^(0.5)/
+	              (tanh(0.833*(9.80665*input$shear_calculation_depth/(input$shear_calculation_wind^2))^(3/8))))))^2*9.80665))))))))
+	})
+	
+	adjusted_wind_data <- reactive({
+	  wind_data %>%
+	    mutate(tau.wind.calculated = tau.wind * (100-input$shear_reduction)/100)
+	})
+	
+	samples_exceeding_critical_shear <- reactive({
+	  adjusted_wind_data() %>%
+	  drop_na(tau.wind.calculated) %>%
+	  summarise(percent = length(tau.wind.calculated[tau.wind.calculated >0.16])/length(tau.wind.calculated)*100) %>%
+	    round(2)
+	})
+	
+
+	adjusted_wind_data_provo <- reactive({
+	  wind_data %>%
+	    filter(SiteCode == 4917446) %>%
+	    mutate(tau.wind.calculated = tau.wind * (100-input$shear_reduction)/100)
+	})
+	
+	samples_exceeding_critical_shear_provo <- reactive({
+	  adjusted_wind_data_provo() %>%
+	    drop_na(tau.wind.calculated) %>%
+	    summarise(percent = length(tau.wind.calculated[tau.wind.calculated >0.16])/length(tau.wind.calculated)*100) %>%
+	    round(2)
+	})
+
+	adjusted_wind_data_utah <- reactive({
+	  wind_data %>%
+	    filter(SiteCode != 4917446) %>%
+	    mutate(tau.wind.calculated = tau.wind * (100-input$shear_reduction)/100)
+	})
+	
+	samples_exceeding_critical_shear_utah <- reactive({
+	  adjusted_wind_data_utah() %>%
+	    drop_na(tau.wind.calculated) %>%
+	    summarise(percent = length(tau.wind.calculated[tau.wind.calculated >0.16])/length(tau.wind.calculated)*100) %>%
+	    round(2)
+	})
+
+	filtered_PAR_data <- reactive({
+	  PAR_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2])
+	})
+
+	filtered_PAR_data_provo <- reactive({
+	  PAR_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2]) %>%
+	    filter(MonitoringLocationIdentifier %in% c(4917775, 4917452, 4917458, 4917450, 4917455,
+	                                               4917460, 4917454, 4917470, 4917450, 4917470))
+	})
+
+	filtered_PAR_data_utah <- reactive({
+	  PAR_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2]) %>%
+	    filter(!(MonitoringLocationIdentifier %in% c(4917775, 4917452, 4917458, 4917450, 4917455,
+	                                                 4917460, 4917454, 4917470, 4917450, 4917470)))
+	})
+	
+	filtered_clarity_data <- reactive({
+	  clarity_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2])
+	})
+	
+	filtered_clarity_data_provo <- reactive({
+	  clarity_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2] )%>%
+	    filter(MonitoringLocationIdentifier %in% c(4917775, 4917452, 4917458, 4917450, 4917455,
+	                                                 4917460, 4917454, 4917470, 4917450, 4917470))
+	  
+	})
+	
+	filtered_clarity_data_utah <- reactive({
+	  clarity_data %>%
+	    filter(Month >= input$PAR_data_plot_months[1] & Month <= input$PAR_data_plot_months[2]) %>%
+	    filter(!(MonitoringLocationIdentifier %in% c(4917775, 4917452, 4917458, 4917450, 4917455,
+	                                                 4917460, 4917454, 4917470, 4917450, 4917470)))
+	})
 		
 	#Tab 1: Elevation plot outputs
 	output$elev_plot=renderPlot({
@@ -1112,7 +1376,186 @@ server <- function(input, output){
 		}	
 
 	})
+
 	
+	#Tab 7: Sonde plot outputs
+
+	output$sonde_data_scatterplot <- renderPlot({
+	    ggplot(data = filtered_sonde_data(), 
+	           aes_string(x = "date", y = input$sonde_choice_y, color = "as.factor(SiteCode)")) +
+	      geom_point(size = 2, alpha = 0.8) +
+	      scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	      scale_x_date(date_breaks = "2 months", date_labels = "%b-%y") +
+	      theme_classic(base_size = 20) +
+	      theme(legend.position = "top", axis.text.x = element_text(angle = 45, hjust = 1)) +
+	      labs(x = "", color = "Station", 
+	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))
+	})
+	
+	output$sonde_data_boxplot <- renderPlot({
+	  ggplot(data = filtered_sonde_data(), 
+	         aes_string(x = "as.factor(Month)", y = input$sonde_choice_y, fill = "as.factor(SiteCode)")) +
+	      geom_boxplot(alpha = 0.8) +
+	      scale_fill_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	      theme_classic(base_size = 20) +
+	      theme(legend.position = "top") +
+	      labs(x = "Month", fill = "Station", 
+	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))
+	  
+	})
+	
+	# Tab 8: Wind plot outputs
+	
+	output$theoretical_wave_shear <- renderUI({
+	  withMathJax(paste0("$$\\text{Theoretical wave shear (N/m }^2 ) =", theoretical_wave_shear(),"$$"))
+	 })
+	
+	
+	output$wind_data_plot <- renderPlot({
+	  ggplot(data = filtered_wind_data(), 
+	         aes_string(x = input$wind_choice_x, y = input$wind_choice_y,  color = "as.factor(SiteCode)")) +
+	    geom_point(alpha = 0.8, size = 2) + 
+	    scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	    labs(color = "Station", 
+	         x = paste("\n", names(wind_data_choices1[wind_data_choices1 == input$wind_choice_x])),  
+	         y = paste("\n", names(wind_data_choices2[wind_data_choices2 == input$wind_choice_y]))) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top") +
+	    if(input$wind_choice_x == "tau.wind") {geom_vline(xintercept = 0.16, lty = 2, size = 1)} else
+	    if(input$wind_choice_y == "tau.wind") {geom_hline(yintercept = 0.16, lty = 2, size = 1)}
+	    
+	})
+	
+#	Tab 9: Macrophyte plot outputs
+	output$shear_exceeded <- renderText({
+	  paste(samples_exceeding_critical_shear(), "% of samples exceed critical shear")
+	})
+	
+	output$macrophyte_data_plot <- renderPlot({
+	  ggplot(data = adjusted_wind_data(), 
+	         aes_string(x = "tau.wind.calculated")) +
+	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
+	    labs(x = expression("Wave shear (N/m"^2*")")) +
+	  	theme_classic(base_size = 20) +
+	    scale_x_continuous(expand = c(0, 0)) + 
+	    scale_y_continuous(expand = c(0, 0))
+	})
+	
+	output$shear_exceeded_provo <- renderText({
+	  paste(samples_exceeding_critical_shear_provo(), "% of samples exceed critical shear")
+	})
+	
+	output$macrophyte_data_plot_provo <- renderPlot({
+	  ggplot(data = adjusted_wind_data_provo(), 
+	         aes_string(x = "tau.wind.calculated")) +
+	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
+	    theme_classic(base_size = 20) +
+	    scale_x_continuous(expand = c(0, 0)) + 
+	    scale_y_continuous(expand = c(0, 0))
+	})
+	
+	output$shear_exceeded_utah <- renderText({
+	  paste(samples_exceeding_critical_shear_utah(), "% of samples exceed critical shear")
+	})
+	
+	output$macrophyte_data_plot_utah <- renderPlot({
+	  ggplot(data = adjusted_wind_data_utah(), 
+	         aes_string(x = "tau.wind.calculated")) +
+	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
+	    theme_classic(base_size = 20) +
+	    scale_x_continuous(expand = c(0, 0)) + 
+	    scale_y_continuous(expand = c(0, 0))
+	})
+	
+	
+	# Tab 10: Light and Clarity
+	output$PAR_data_plot <- renderPlot({
+	  ggplot(filtered_PAR_data(), aes_string(x = "ResultMeasureValue", y = "SampleDepthValue", color = "Month")) +
+	    geom_point(size = 3) +
+	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
+	    scale_y_reverse() +
+	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top")
+	})
+	
+	output$PAR_data_plot_provo <- renderPlot({
+	  ggplot(filtered_PAR_data_provo(), aes_string(x = "ResultMeasureValue", y = "SampleDepthValue", color = "Month")) +
+	    geom_point(size = 3) +
+	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
+	    scale_y_reverse() +
+	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top")
+	})
+	
+	output$PAR_data_plot_utah <- renderPlot({
+	  ggplot(filtered_PAR_data_utah(), aes_string(x = "ResultMeasureValue", y = "SampleDepthValue", color = "Month")) +
+	    geom_point(size = 3) +
+	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
+	    scale_y_reverse() +
+	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top")
+	})
+	  
+	output$clarity_data_plot <- renderPlot({
+	  ggplot(data = filtered_clarity_data(),
+	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
+	    geom_point(size = 3) +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
+	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "none") +
+	    if(input$clarity_choice_y == "k" & input$light_fit == 1) 
+	    {geom_smooth(method = lm, se = FALSE, color = "black")} else
+	      if(input$clarity_choice_y == "secchidepth.m" & input$light_fit == 1) 
+	      {geom_smooth(method = lm, se = FALSE, color = "black", formula = y ~ log(x))}
+	})
+	
+	clarity_data_choices_x
+	
+	output$clarity_data_plot_provo <- renderPlot({
+	  ggplot(data = filtered_clarity_data_provo(),
+	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
+	    geom_point(size = 3) +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
+	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "none") +
+	    if(input$clarity_choice_y == "k" & input$light_fit == 1) 
+	    {geom_smooth(method = lm, se = FALSE, color = "black")} else
+	      if(input$clarity_choice_y == "secchidepth.m" & input$light_fit == 1) 
+	      {geom_smooth(method = lm, se = FALSE, color = "black", formula = y ~ log(x))}
+	})
+	
+	output$clarity_data_plot_utah <- renderPlot({
+	  ggplot(data = filtered_clarity_data_utah(),
+	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
+	    geom_point(size = 3) +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
+	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "none") +
+	    if(input$clarity_choice_y == "k" & input$light_fit == 1) 
+	    {geom_smooth(method = lm, se = FALSE, color = "black")} else
+	      if(input$clarity_choice_y == "secchidepth.m" & input$light_fit == 1) 
+	      {geom_smooth(method = lm, se = FALSE, color = "black", formula = y ~ log(x))}
+	})
+
+		
 }
 
 # Run app
