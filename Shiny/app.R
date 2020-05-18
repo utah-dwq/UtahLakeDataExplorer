@@ -348,6 +348,8 @@ ui <- fluidPage(
 			### Sonde data tab:
 			conditionalPanel(
 			  condition="input.tabs==7",
+			  helpText("This tool shows the conditions across sites in Utah Lake as measured by sensors deployed on sondes. 
+			           Data were collected in 15-minute intervals and averaged into daily values."),
 			  sliderInput(inputId="sonde_data_plot_months","Month range:",
 			              min=4,max=11,
 			              value=c(1, 12),sep="", step=1),
@@ -363,14 +365,19 @@ ui <- fluidPage(
 			### Wind and turbidity data tab:
 			conditionalPanel(
 			  condition="input.tabs==8",
-			  helpText("Calculate theoretical shear stress experienced by sediments"),
+			  helpText("Sediments can be resuspended into the water column in response to waves and currents (shear stress),
+			           resulting in high turbidity and reduced clarity.
+			           This tool explores the theoretical and observational relationships between turbidity, wind speed, 
+			           and shear stress due to wave activity."),
+			  helpText("Theoretical tool: calculate wave shear experienced by sediments in response to changing wind and basin shape."),
 			  sliderInput(inputId="shear_calculation_depth","Water depth (m):",
 			              min = 1,max = 10, value = 3, sep="", step=0.5),
 			  sliderInput(inputId="shear_calculation_wind","Wind speed (m/s):",
 			              min = 0,max = 10, value = 2.5, sep="", step=0.5),
 			  sliderInput(inputId="shear_calculation_fetch","Fetch (km):",
 			              min = 5,max = 30, value = 24, sep="", step=1),
-			  helpText("Explore observed conditions in Utah Lake"),
+			  helpText("Observational tool: explore actual conditions in Utah Lake as measured by sensors on a data sonde. 
+			           The dotted line on the wave shear axis represents critical shear, the shear value at which sediments are resuspended."),
 			  checkboxGroupInput("wind_data_stations","Include:",
 			                     choiceNames=c("Utah Lake North (4917365)", "Utah Lake Mid (4917390)", 
 			                                   "Provo Bay (4917446)", "Utah Lake South (4917715)"),
@@ -382,7 +389,10 @@ ui <- fluidPage(
 			### Turbidity and macrophytes data tab:
 			conditionalPanel(
 			  condition="input.tabs==9",
-			  helpText("Simulate the reduction in wave shear by macrophytes"),
+			  helpText("Submerged aquatic vegetation (macrophytes) reduces the shear experienced by the sediments by reducing wave action.
+			           This tool calculates the wave shear from observed dates based on the theoretical reduction provided by macrophytes."),
+			  helpText("The vertical line represents the critical shear, the shear value at which sediments are resuspended.
+			           Observations below critical shear will not experience sediment resuspension due to wave action."),
 			  sliderInput(inputId="shear_reduction","% Reduction:",
 			              min = 0, max = 80, value = 0, sep="", step=5),
 			  radioButtons("macrophyte_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
@@ -391,12 +401,14 @@ ui <- fluidPage(
 			## Light extinction data tab:
 			conditionalPanel(
 			  condition="input.tabs==10",
-			  helpText(""),
+			  helpText("This tool illustrates the rapid attenuation of light with depth in Utah Lake. 
+			           Light is measured as photosynthetically active radiation (PAR)."),
 			  sliderInput(inputId="PAR_data_plot_months","Month range:",
 			              min=min(PAR_data$Month,na.rm=T),max=max(PAR_data$Month,na.rm=T),
 			              value=c(4, 9),sep="", step=1),
 			  radioButtons("PAR_data_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
-			  helpText(""),
+			  helpText("The degree of light attenuation can be measured by the light attenuation coefficient (k)
+			           and Secchi depth. Both of these metrics are related to light absorbing and light scattering consituents in the water column."),
 			  selectInput("clarity_choice_x","Parameter x:",choices=clarity_data_choices_x, selected="Turbidity"),
 			  selectInput("clarity_choice_y","Parameter y:",choices=clarity_data_choices_y, selected="k"),
 			  radioButtons(inputId = "light_fit",
@@ -452,23 +464,38 @@ ui <- fluidPage(
 			),
 			conditionalPanel(
 			  condition = "input.tabs == 8",
-			  withMathJax("$$\\text{Display formula in heading }X_n=X_{n-1}-\\varepsilon$$"),
-			  textOutput("theoretical_wave_shear"),
+			  br(),
+			  br(),
+			  withMathJax(uiOutput("theoretical_wave_shear")),
+			  br(),
+			  br(),
 			  plotOutput("wind_data_plot", width="800px", height="500px")
 			),
 			conditionalPanel(
 			  condition = "input.tabs == 9 & input.macrophyte_stations == 1",
+			  br(),
+			  br(),
 			  textOutput("shear_exceeded_utah"),
+			  br(),
+			  br(),
 			  plotOutput("macrophyte_data_plot_utah", width="800px", height="500px")
 			), 
 			conditionalPanel(
 			  condition = "input.tabs == 9 & input.macrophyte_stations == 2",
+			  br(),
+			  br(),
 			  textOutput("shear_exceeded_provo"),
+			  br(),
+			  br(),
 			  plotOutput("macrophyte_data_plot_provo", width="800px", height="500px")
 			), 
 			conditionalPanel(
 			  condition = "input.tabs == 9 & input.macrophyte_stations == 3",
+			  br(),
+			  br(),
 			  textOutput("shear_exceeded"),
+			  br(),
+			  br(),
 			  plotOutput("macrophyte_data_plot", width="800px", height="500px")
 			),
 			conditionalPanel(
@@ -1379,10 +1406,10 @@ server <- function(input, output){
 	
 	# Tab 8: Wind plot outputs
 	
+	output$theoretical_wave_shear <- renderUI({
+	  withMathJax(paste0("$$\\text{Theoretical wave shear (N/m }^2 ) =", theoretical_wave_shear(),"$$"))
+	 })
 	
-	output$theoretical_wave_shear <- renderText({
-	  paste("Theoretical wave shear (N/m2) = ", theoretical_wave_shear())
-	})
 	
 	output$wind_data_plot <- renderPlot({
 	  ggplot(data = filtered_wind_data(), 
@@ -1502,24 +1529,30 @@ server <- function(input, output){
 	  ggplot(data = filtered_clarity_data_provo(),
 	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
 	    geom_point(size = 3) +
-	    scale_y_reverse() +
 	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
 	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
 	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
 	    theme_classic(base_size = 20) +
-	    theme(legend.position = "none")
+	    theme(legend.position = "none") +
+	    if(input$clarity_choice_y == "k" & input$light_fit == 1) 
+	    {geom_smooth(method = lm, se = FALSE, color = "black")} else
+	      if(input$clarity_choice_y == "secchidepth.m" & input$light_fit == 1) 
+	      {geom_smooth(method = lm, se = FALSE, color = "black", formula = y ~ log(x))}
 	})
 	
 	output$clarity_data_plot_utah <- renderPlot({
 	  ggplot(data = filtered_clarity_data_utah(),
 	         aes_string(x = input$clarity_choice_x, y = input$clarity_choice_y, color = "Month")) +
 	    geom_point(size = 3) +
-	    scale_y_reverse() +
 	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
 	    labs(x = paste("\n", names(clarity_data_choices_x[clarity_data_choices_x == input$clarity_choice_x])), 
 	         y = paste("\n", names(clarity_data_choices_y[clarity_data_choices_y == input$clarity_choice_y]))) +
 	    theme_classic(base_size = 20) +
-	    theme(legend.position = "none")
+	    theme(legend.position = "none") +
+	    if(input$clarity_choice_y == "k" & input$light_fit == 1) 
+	    {geom_smooth(method = lm, se = FALSE, color = "black")} else
+	      if(input$clarity_choice_y == "secchidepth.m" & input$light_fit == 1) 
+	      {geom_smooth(method = lm, se = FALSE, color = "black", formula = y ~ log(x))}
 	})
 
 		
