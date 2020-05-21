@@ -1,0 +1,504 @@
+CharacteristicName,ResultSampleFractionText,RelativeDepth,Parameter,Fraction,Depth
+.alpha.-Endosulfan,Total,Bottom,.alpha.-Endosulfan,Total,Bottom
+.alpha.-Endosulfan,Total,Surface,.alpha.-Endosulfan,Total,Surface
+.alpha.-Endosulfan,Total,,.alpha.-Endosulfan,Total,
+.alpha.-Hexachlorocyclohexane,Total,Bottom,.alpha.-Hexachlorocyclohexane,Total,Bottom
+.alpha.-Hexachlorocyclohexane,Total,Surface,.alpha.-Hexachlorocyclohexane,Total,Surface
+.alpha.-Hexachlorocyclohexane,Total,,.alpha.-Hexachlorocyclohexane,Total,
+.beta.-Endosulfan,Total,Bottom,.beta.-Endosulfan,Total,Bottom
+.beta.-Endosulfan,Total,Surface,.beta.-Endosulfan,Total,Surface
+.beta.-Endosulfan,Total,,.beta.-Endosulfan,Total,
+.beta.-Hexachlorocyclohexane,Total,Bottom,.beta.-Hexachlorocyclohexane,Total,Bottom
+.beta.-Hexachlorocyclohexane,Total,Surface,.beta.-Hexachlorocyclohexane,Total,Surface
+.beta.-Hexachlorocyclohexane,Total,,.beta.-Hexachlorocyclohexane,Total,
+.delta.-Hexachlorocyclohexane,Total,Bottom,.delta.-Hexachlorocyclohexane,Total,Bottom
+.delta.-Hexachlorocyclohexane,Total,Surface,.delta.-Hexachlorocyclohexane,Total,Surface
+.delta.-Hexachlorocyclohexane,Total,,.delta.-Hexachlorocyclohexane,Total,
+"2,4,5-T",Total,Bottom,"2,4,5-T",Total,Bottom
+"2,4,5-T",Total,Surface,"2,4,5-T",Total,Surface
+"2,4,5-T",Total,,"2,4,5-T",Total,
+"2,4-D",Total,Bottom,"2,4-D",Total,Bottom
+"2,4-D",Total,Surface,"2,4-D",Total,Surface
+"2,4-D",Total,,"2,4-D",Total,
+Aldrin,Total,Bottom,Aldrin,Total,Bottom
+Aldrin,Total,Surface,Aldrin,Total,Surface
+Aldrin,Total,,Aldrin,Total,
+"Alkalinity, total",Total,Bottom,"Alkalinity, total",Total,Bottom
+"Alkalinity, total",Total,Surface,"Alkalinity, total",Total,Surface
+"Alkalinity, total",Total,,"Alkalinity, total",Total,
+Aluminum,Dissolved,Bottom,Aluminum,Dissolved,Bottom
+Aluminum,Dissolved,Surface,Aluminum,Dissolved,Surface
+Aluminum,Dissolved,,Aluminum,Dissolved,
+Aluminum,Total,Bottom,Aluminum,Total,Bottom
+Aluminum,Total,Surface,Aluminum,Total,Surface
+Aluminum,Total,,Aluminum,Total,
+Ammonia-nitrogen,Dissolved,Bottom,Ammonia-nitrogen,Dissolved,Bottom
+Ammonia-nitrogen,Dissolved,Surface,Ammonia-nitrogen,Dissolved,Surface
+Ammonia-nitrogen,Dissolved,,Ammonia-nitrogen,Dissolved,
+Ammonia-nitrogen,Total,Bottom,Ammonia-nitrogen,Total,Bottom
+Ammonia-nitrogen,Total,Surface,Ammonia-nitrogen,Total,Surface
+Ammonia-nitrogen,Total,,Ammonia-nitrogen,Total,
+Aroclor 1016,Total,Bottom,Aroclor 1016,Total,Bottom
+Aroclor 1016,Total,Surface,Aroclor 1016,Total,Surface
+Aroclor 1016,Total,,Aroclor 1016,Total,
+Aroclor 1221,Total,Bottom,Aroclor 1221,Total,Bottom
+Aroclor 1221,Total,Surface,Aroclor 1221,Total,Surface
+Aroclor 1221,Total,,Aroclor 1221,Total,
+Aroclor 1232,Total,Bottom,Aroclor 1232,Total,Bottom
+Aroclor 1232,Total,Surface,Aroclor 1232,Total,Surface
+Aroclor 1232,Total,,Aroclor 1232,Total,
+Aroclor 1242,Total,Bottom,Aroclor 1242,Total,Bottom
+Aroclor 1242,Total,Surface,Aroclor 1242,Total,Surface
+Aroclor 1242,Total,,Aroclor 1242,Total,
+Aroclor 1248,Total,Bottom,Aroclor 1248,Total,Bottom
+Aroclor 1248,Total,Surface,Aroclor 1248,Total,Surface
+Aroclor 1248,Total,,Aroclor 1248,Total,
+Aroclor 1254,Total,Bottom,Aroclor 1254,Total,Bottom
+Aroclor 1254,Total,Surface,Aroclor 1254,Total,Surface
+Aroclor 1254,Total,,Aroclor 1254,Total,
+Aroclor 1260,Total,Bottom,Aroclor 1260,Total,Bottom
+Aroclor 1260,Total,Surface,Aroclor 1260,Total,Surface
+Aroclor 1260,Total,,Aroclor 1260,Total,
+Arsenic,Acid Soluble,Bottom,Arsenic,Total,Bottom
+Arsenic,Acid Soluble,Surface,Arsenic,Total,Surface
+Arsenic,Acid Soluble,,Arsenic,Total,
+Arsenic,Dissolved,Bottom,Arsenic,Dissolved,Bottom
+Arsenic,Dissolved,Surface,Arsenic,Dissolved,Surface
+Arsenic,Dissolved,,Arsenic,Dissolved,
+Arsenic,Total,Bottom,Arsenic,Total,Bottom
+Arsenic,Total,Surface,Arsenic,Total,Surface
+Arsenic,Total,,Arsenic,Total,
+Barium,Acid Soluble,Bottom,Barium,Total,Bottom
+Barium,Acid Soluble,Surface,Barium,Total,Surface
+Barium,Acid Soluble,,Barium,Total,
+Barium,Dissolved,Bottom,Barium,Dissolved,Bottom
+Barium,Dissolved,Surface,Barium,Dissolved,Surface
+Barium,Dissolved,,Barium,Dissolved,
+Barium,Total,Bottom,Barium,Total,Bottom
+Barium,Total,Surface,Barium,Total,Surface
+Barium,Total,,Barium,Total,
+Beryllium,Dissolved,Bottom,Beryllium,Dissolved,Bottom
+Beryllium,Dissolved,Surface,Beryllium,Dissolved,Surface
+Beryllium,Dissolved,,Beryllium,Dissolved,
+Beryllium,Total,Bottom,Beryllium,Total,Bottom
+Beryllium,Total,Surface,Beryllium,Total,Surface
+Beryllium,Total,,Beryllium,Total,
+Bicarbonate,Total,Bottom,Bicarbonate,Total,Bottom
+Bicarbonate,Total,Surface,Bicarbonate,Total,Surface
+Bicarbonate,Total,,Bicarbonate,Total,
+"Biochemical oxygen demand, standard conditions",Total,Bottom,"Biochemical oxygen demand, standard conditions",Total,Bottom
+"Biochemical oxygen demand, standard conditions",Total,Surface,"Biochemical oxygen demand, standard conditions",Total,Surface
+"Biochemical oxygen demand, standard conditions",Total,,"Biochemical oxygen demand, standard conditions",Total,
+BoD,,Bottom,BoD,,Bottom
+BoD,,Surface,BoD,,Surface
+BoD,,,BoD,,
+Boron,Dissolved,Bottom,Boron,Dissolved,Bottom
+Boron,Dissolved,Surface,Boron,Dissolved,Surface
+Boron,Dissolved,,Boron,Dissolved,
+Boron,Total,Bottom,Boron,Total,Bottom
+Boron,Total,Surface,Boron,Total,Surface
+Boron,Total,,Boron,Total,
+Cadmium,Acid Soluble,Bottom,Cadmium,Total,Bottom
+Cadmium,Acid Soluble,Surface,Cadmium,Total,Surface
+Cadmium,Acid Soluble,,Cadmium,Total,
+Cadmium,Dissolved,Bottom,Cadmium,Dissolved,Bottom
+Cadmium,Dissolved,Surface,Cadmium,Dissolved,Surface
+Cadmium,Dissolved,,Cadmium,Dissolved,
+Cadmium,Total,Bottom,Cadmium,Total,Bottom
+Cadmium,Total,Surface,Cadmium,Total,Surface
+Cadmium,Total,,Cadmium,Total,
+Calcium,Dissolved,Bottom,Calcium,Dissolved,Bottom
+Calcium,Dissolved,Surface,Calcium,Dissolved,Surface
+Calcium,Dissolved,,Calcium,Dissolved,
+Calcium,Total,Bottom,Calcium,Total,Bottom
+Calcium,Total,Surface,Calcium,Total,Surface
+Calcium,Total,,Calcium,Total,
+Calcium carbonate,Total,Bottom,Calcium carbonate,Total,Bottom
+Calcium carbonate,Total,Surface,Calcium carbonate,Total,Surface
+Calcium carbonate,Total,,Calcium carbonate,Total,
+Carbon dioxide,Total,Bottom,Carbon dioxide,Total,Bottom
+Carbon dioxide,Total,Surface,Carbon dioxide,Total,Surface
+Carbon dioxide,Total,,Carbon dioxide,Total,
+"Carbonaceous biochemical oxygen demand, standard conditions",Dissolved,Bottom,"Carbonaceous biochemical oxygen demand, standard conditions",Dissolved,Bottom
+"Carbonaceous biochemical oxygen demand, standard conditions",Dissolved,Surface,"Carbonaceous biochemical oxygen demand, standard conditions",Dissolved,Surface
+"Carbonaceous biochemical oxygen demand, standard conditions",Dissolved,,"Carbonaceous biochemical oxygen demand, standard conditions",Dissolved,
+"Carbonaceous biochemical oxygen demand, standard conditions",Total,Bottom,"Carbonaceous biochemical oxygen demand, standard conditions",Total,Bottom
+"Carbonaceous biochemical oxygen demand, standard conditions",Total,Surface,"Carbonaceous biochemical oxygen demand, standard conditions",Total,Surface
+"Carbonaceous biochemical oxygen demand, standard conditions",Total,,"Carbonaceous biochemical oxygen demand, standard conditions",Total,
+Carbonate,Total,Bottom,Carbonate,Total,Bottom
+Carbonate,Total,Surface,Carbonate,Total,Surface
+Carbonate,Total,,Carbonate,Total,
+Chemical oxygen demand,Total,Bottom,Chemical oxygen demand,Total,Bottom
+Chemical oxygen demand,Total,Surface,Chemical oxygen demand,Total,Surface
+Chemical oxygen demand,Total,,Chemical oxygen demand,Total,
+Chlordane,Total,Bottom,Chlordane,Total,Bottom
+Chlordane,Total,Surface,Chlordane,Total,Surface
+Chlordane,Total,,Chlordane,Total,
+Chloride,Dissolved,Bottom,Chloride,Dissolved,Bottom
+Chloride,Dissolved,Surface,Chloride,Dissolved,Surface
+Chloride,Dissolved,,Chloride,Dissolved,
+Chloride,Total,Surface,Chloride,Total,Surface
+Chlorophyll a,Total,Bottom,Chlorophyll a,Total,Bottom
+Chlorophyll a,Total,Surface,Chlorophyll a,Total,Surface
+Chlorophyll a,Total,,Chlorophyll a,Total,
+"Chlorophyll a, corrected for pheophytin",Total,Bottom,Chlorophyll a,Total,Bottom
+"Chlorophyll a, corrected for pheophytin",Total,Surface,Chlorophyll a,Total,Surface
+"Chlorophyll a, corrected for pheophytin",Total,,Chlorophyll a,Total,
+"Chlorophyll a, free of pheophytin",Total,Bottom,Chlorophyll a,Total,Bottom
+"Chlorophyll a, free of pheophytin",Total,Surface,Chlorophyll a,Total,Surface
+"Chlorophyll a, free of pheophytin",Total,,Chlorophyll a,Total,
+"Chlorophyll a, uncorrected for pheophytin",Total,Bottom,Chlorophyll a,Total,Bottom
+"Chlorophyll a, uncorrected for pheophytin",Total,Surface,Chlorophyll a,Total,Surface
+"Chlorophyll a, uncorrected for pheophytin",Total,,Chlorophyll a,Total,
+Chlorthal-dimethyl,Total,Bottom,Chlorthal-dimethyl,Total,Bottom
+Chlorthal-dimethyl,Total,Surface,Chlorthal-dimethyl,Total,Surface
+Chlorthal-dimethyl,Total,,Chlorthal-dimethyl,Total,
+Chromium,Acid Soluble,Bottom,Chromium,Total,Bottom
+Chromium,Acid Soluble,Surface,Chromium,Total,Surface
+Chromium,Acid Soluble,,Chromium,Total,
+Chromium,Dissolved,Bottom,Chromium,Dissolved,Bottom
+Chromium,Dissolved,Surface,Chromium,Dissolved,Surface
+Chromium,Dissolved,,Chromium,Dissolved,
+Chromium,Total,Bottom,Chromium,Total,Bottom
+Chromium,Total,Surface,Chromium,Total,Surface
+Chromium,Total,,Chromium,Total,
+Copper,Acid Soluble,Bottom,Copper,Total,Bottom
+Copper,Acid Soluble,Surface,Copper,Total,Surface
+Copper,Acid Soluble,,Copper,Total,
+Copper,Dissolved,Bottom,Copper,Dissolved,Bottom
+Copper,Dissolved,Surface,Copper,Dissolved,Surface
+Copper,Dissolved,,Copper,Dissolved,
+Copper,Total,Bottom,Copper,Total,Bottom
+Copper,Total,Surface,Copper,Total,Surface
+Copper,Total,,Copper,Total,
+Depth,Total,Bottom,Depth,Total,Bottom
+Depth,Total,Surface,Depth,Total,
+Depth,Total,,Depth,Total,
+"Depth, data-logger (ported)",,,"Depth, data-logger (ported)",N/A,N/A
+"Depth, Secchi disk depth",Total,Bottom,"Depth, Secchi disk depth",N/A,N/A
+"Depth, Secchi disk depth",Total,Surface,"Depth, Secchi disk depth",N/A,N/A
+"Depth, Secchi disk depth",Total,,"Depth, Secchi disk depth",N/A,N/A
+"Depth, Secchi disk depth",,Bottom,"Depth, Secchi disk depth",N/A,N/A
+"Depth, Secchi disk depth",,Surface,"Depth, Secchi disk depth",N/A,N/A
+"Depth, Secchi disk depth",,,"Depth, Secchi disk depth",N/A,N/A
+Dieldrin,Total,Bottom,Dieldrin,Total,Bottom
+Dieldrin,Total,Surface,Dieldrin,Total,Surface
+Dieldrin,Total,,Dieldrin,Total,
+Dissolved oxygen (DO),Total,Bottom,Dissolved oxygen (DO),N/A,Bottom
+Dissolved oxygen (DO),Total,Surface,Dissolved oxygen (DO),N/A,Surface
+Dissolved oxygen (DO),Total,,Dissolved oxygen (DO),N/A,
+Dissolved oxygen (DO),,Bottom,Dissolved oxygen (DO),N/A,Bottom
+Dissolved oxygen (DO),,Surface,Dissolved oxygen (DO),N/A,Surface
+Dissolved oxygen (DO),,,Dissolved oxygen (DO),N/A,
+Dissolved oxygen saturation,Total,Bottom,Dissolved oxygen saturation,N/A,Bottom
+Dissolved oxygen saturation,Total,Surface,Dissolved oxygen saturation,N/A,Surface
+Dissolved oxygen saturation,Total,,Dissolved oxygen saturation,N/A,
+Dissolved oxygen saturation,,Bottom,Dissolved oxygen saturation,N/A,Bottom
+Dissolved oxygen saturation,,Surface,Dissolved oxygen saturation,N/A,Surface
+Dissolved oxygen saturation,,,Dissolved oxygen saturation,N/A,
+Endosulfan sulfate,Total,Bottom,Endosulfan sulfate,Total,Bottom
+Endosulfan sulfate,Total,Surface,Endosulfan sulfate,Total,Surface
+Endosulfan sulfate,Total,,Endosulfan sulfate,Total,
+Endrin,Total,Bottom,Endrin,Total,Bottom
+Endrin,Total,Surface,Endrin,Total,Surface
+Endrin,Total,,Endrin,Total,
+Endrin aldehyde,Total,Bottom,Endrin aldehyde,Total,Bottom
+Endrin aldehyde,Total,Surface,Endrin aldehyde,Total,Surface
+Endrin aldehyde,Total,,Endrin aldehyde,Total,
+Endrin ketone,Total,Bottom,Endrin ketone,Total,Bottom
+Endrin ketone,Total,Surface,Endrin ketone,Total,Surface
+Endrin ketone,Total,,Endrin ketone,Total,
+Escherichia coli,,Bottom,Escherichia coli,,Bottom
+Escherichia coli,,Surface,Escherichia coli,,Surface
+Escherichia coli,,,Escherichia coli,,
+Fecal Coliform,Total,Bottom,Fecal Coliform,Total,Surface
+Fecal Coliform,Total,Surface,Fecal Coliform,Total,Surface
+Fecal Coliform,Total,,Fecal Coliform,Total,Surface
+Fecal Streptococcus Group Bacteria,Total,Bottom,Fecal Streptococcus Group Bacteria,Total,Bottom
+Fecal Streptococcus Group Bacteria,Total,Surface,Fecal Streptococcus Group Bacteria,Total,Surface
+Fecal Streptococcus Group Bacteria,Total,,Fecal Streptococcus Group Bacteria,Total,
+Fluoride,Dissolved,Bottom,Fluoride,Dissolved,Bottom
+Fluoride,Dissolved,Surface,Fluoride,Dissolved,Surface
+Fluoride,Dissolved,,Fluoride,Dissolved,
+"Hardness, Ca, Mg",Dissolved,Bottom,"Hardness, Ca, Mg",Dissolved,Bottom
+"Hardness, Ca, Mg",Dissolved,Surface,"Hardness, Ca, Mg",Dissolved,Surface
+"Hardness, Ca, Mg",Dissolved,,"Hardness, Ca, Mg",Dissolved,
+"Hardness, Ca, Mg",Total,Bottom,"Hardness, Ca, Mg",Total,Bottom
+"Hardness, Ca, Mg",Total,Surface,"Hardness, Ca, Mg",Total,Surface
+"Hardness, Ca, Mg",Total,,"Hardness, Ca, Mg",Total,
+Heptachlor,Total,Bottom,Heptachlor,Total,Bottom
+Heptachlor,Total,Surface,Heptachlor,Total,Surface
+Heptachlor,Total,,Heptachlor,Total,
+Heptachlor epoxide,Total,Bottom,Heptachlor epoxide,Total,Bottom
+Heptachlor epoxide,Total,Surface,Heptachlor epoxide,Total,Surface
+Heptachlor epoxide,Total,,Heptachlor epoxide,Total,
+Hydroxide,Total,Bottom,Hydroxide,Total,Bottom
+Hydroxide,Total,Surface,Hydroxide,Total,Surface
+Hydroxide,Total,,Hydroxide,Total,
+Inorganic nitrogen (nitrate and nitrite),Dissolved,Bottom,Inorganic nitrogen (nitrate and nitrite),Dissolved,Bottom
+Inorganic nitrogen (nitrate and nitrite),Dissolved,Surface,Inorganic nitrogen (nitrate and nitrite),Dissolved,Surface
+Inorganic nitrogen (nitrate and nitrite),Dissolved,,Inorganic nitrogen (nitrate and nitrite),Dissolved,
+Inorganic nitrogen (nitrate and nitrite),Total,Bottom,Inorganic nitrogen (nitrate and nitrite),Total,Bottom
+Inorganic nitrogen (nitrate and nitrite),Total,Surface,Inorganic nitrogen (nitrate and nitrite),Total,Surface
+Inorganic nitrogen (nitrate and nitrite),Total,,Inorganic nitrogen (nitrate and nitrite),Total,
+Iron,Acid Soluble,Bottom,Iron,Total,Bottom
+Iron,Acid Soluble,Surface,Iron,Total,Surface
+Iron,Acid Soluble,,Iron,Total,
+Iron,Dissolved,Bottom,Iron,Dissolved,Bottom
+Iron,Dissolved,Surface,Iron,Dissolved,Surface
+Iron,Dissolved,,Iron,Dissolved,
+Iron,Total,Bottom,Iron,Total,Bottom
+Iron,Total,Surface,Iron,Total,Surface
+Iron,Total,,Iron,Total,
+Kjeldahl nitrogen,Total,Bottom,Kjeldahl nitrogen,Total,Bottom
+Kjeldahl nitrogen,Total,Surface,Kjeldahl nitrogen,Total,Surface
+Kjeldahl nitrogen,Total,,Kjeldahl nitrogen,Total,
+Lead,Acid Soluble,Bottom,Lead,Total,Bottom
+Lead,Acid Soluble,Surface,Lead,Total,Surface
+Lead,Acid Soluble,,Lead,Total,
+Lead,Dissolved,Bottom,Lead,Dissolved,Bottom
+Lead,Dissolved,Surface,Lead,Dissolved,Surface
+Lead,Dissolved,,Lead,Dissolved,
+Lead,Total,Bottom,Lead,Total,Bottom
+Lead,Total,Surface,Lead,Total,Surface
+Lead,Total,,Lead,Total,
+Lindane,Total,Bottom,Lindane,Total,Bottom
+Lindane,Total,Surface,Lindane,Total,Surface
+Lindane,Total,,Lindane,Total,
+Magnesium,Dissolved,Bottom,Magnesium,Dissolved,Bottom
+Magnesium,Dissolved,Surface,Magnesium,Dissolved,Surface
+Magnesium,Dissolved,,Magnesium,Dissolved,
+Magnesium,Total,Bottom,Magnesium,Total,Bottom
+Magnesium,Total,Surface,Magnesium,Total,Surface
+Magnesium,Total,,Magnesium,Total,
+Manganese,Acid Soluble,Bottom,Manganese,Total,Bottom
+Manganese,Acid Soluble,Surface,Manganese,Total,Surface
+Manganese,Acid Soluble,,Manganese,Total,
+Manganese,Dissolved,Bottom,Manganese,Dissolved,Bottom
+Manganese,Dissolved,Surface,Manganese,Dissolved,Surface
+Manganese,Dissolved,,Manganese,Dissolved,
+Manganese,Total,Bottom,Manganese,Total,Bottom
+Manganese,Total,Surface,Manganese,Total,Surface
+Manganese,Total,,Manganese,Total,
+Mercury,Acid Soluble,Bottom,Mercury,Total,Bottom
+Mercury,Acid Soluble,Surface,Mercury,Total,Surface
+Mercury,Acid Soluble,,Mercury,Total,
+Mercury,Dissolved,Bottom,Mercury,Dissolved,Bottom
+Mercury,Dissolved,Surface,Mercury,Dissolved,Surface
+Mercury,Dissolved,,Mercury,Dissolved,
+Methoxychlor,Total,Bottom,Methoxychlor,Total,Bottom
+Methoxychlor,Total,Surface,Methoxychlor,Total,Surface
+Methoxychlor,Total,,Methoxychlor,Total,
+NH3-N,,Bottom,NH3-N,,Bottom
+NH3-N,,Surface,NH3-N,,Surface
+NH3-N,,,NH3-N,,
+Nickel,Dissolved,Bottom,Nickel,Dissolved,Bottom
+Nickel,Dissolved,Surface,Nickel,Dissolved,Surface
+Nickel,Dissolved,,Nickel,Dissolved,
+Nickel,Total,Bottom,Nickel,Total,Bottom
+Nickel,Total,Surface,Nickel,Total,Surface
+Nickel,Total,,Nickel,Total,
+Nitrate,Dissolved,Bottom,Nitrate,Dissolved,Bottom
+Nitrate,Dissolved,Surface,Nitrate,Dissolved,Surface
+Nitrate,Dissolved,,Nitrate,Dissolved,
+Nitrate,Total,Bottom,Nitrate,Total,Bottom
+Nitrate,Total,Surface,Nitrate,Total,Surface
+Nitrate,Total,,Nitrate,Total,
+Nitrite,Dissolved,Bottom,Nitrite,Dissolved,Bottom
+Nitrite,Dissolved,Surface,Nitrite,Dissolved,Surface
+Nitrite,Dissolved,,Nitrite,Dissolved,
+Nitrite,Total,Bottom,Nitrite,Total,Bottom
+Nitrite,Total,Surface,Nitrite,Total,Surface
+Nitrite,Total,,Nitrite,Total,
+Nitrogen,Dissolved,Bottom,Nitrogen,Dissolved,Bottom
+Nitrogen,Dissolved,Surface,Nitrogen,Dissolved,Surface
+Nitrogen,Dissolved,,Nitrogen,Dissolved,
+Nitrogen,Total,Bottom,Nitrogen,Total,Bottom
+Nitrogen,Total,Surface,Nitrogen,Total,Surface
+Nitrogen,Total,,Nitrogen,Total,
+No2+No3,,Bottom,No2+No3,,Bottom
+No2+No3,,Surface,No2+No3,,Surface
+No2+No3,,,No2+No3,,
+NO2-N,,Bottom,NO2-N,,Bottom
+NO2-N,,Surface,NO2-N,,Surface
+NO2-N,,,NO2-N,,
+NO3-N,,Bottom,NO3-N,,Bottom
+NO3-N,,Surface,NO3-N,,Surface
+NO3-N,,,NO3-N,,
+o-PO4-P,,Bottom,o-PO4-P,,Bottom
+o-PO4-P,,Surface,o-PO4-P,,Surface
+o-PO4-P,,,o-PO4-P,,
+Organic carbon,Dissolved,Bottom,Organic carbon,Dissolved,Bottom
+Organic carbon,Dissolved,Surface,Organic carbon,Dissolved,Surface
+Organic carbon,Dissolved,,Organic carbon,Dissolved,
+Organic carbon,Total,Bottom,Organic carbon,Total,Bottom
+Organic carbon,Total,Surface,Organic carbon,Total,Surface
+Organic carbon,Total,,Organic carbon,Total,
+Organic Nitrogen,Dissolved,Bottom,Organic Nitrogen,Dissolved,Bottom
+Organic Nitrogen,Dissolved,Surface,Organic Nitrogen,Dissolved,Surface
+Organic Nitrogen,Dissolved,,Organic Nitrogen,Dissolved,
+Orthophosphate,Dissolved,Bottom,Orthophosphate,Dissolved,Bottom
+Orthophosphate,Dissolved,Surface,Orthophosphate,Dissolved,Surface
+Orthophosphate,Dissolved,,Orthophosphate,Dissolved,
+Orthophosphate,Total,Bottom,Orthophosphate,Total,Bottom
+Orthophosphate,Total,Surface,Orthophosphate,Total,Surface
+Orthophosphate,Total,,Orthophosphate,Total,
+"p,p'-DDD",Total,Bottom,"p,p'-DDD",Total,Bottom
+"p,p'-DDD",Total,Surface,"p,p'-DDD",Total,Surface
+"p,p'-DDD",Total,,"p,p'-DDD",Total,
+"p,p'-DDE",Total,Bottom,"p,p'-DDE",Total,Bottom
+"p,p'-DDE",Total,Surface,"p,p'-DDE",Total,Surface
+"p,p'-DDE",Total,,"p,p'-DDE",Total,
+"p,p'-DDT",Total,Bottom,"p,p'-DDT",Total,Bottom
+"p,p'-DDT",Total,Surface,"p,p'-DDT",Total,Surface
+"p,p'-DDT",Total,,"p,p'-DDT",Total,
+pH,Total,Bottom,pH,N/A,Bottom
+pH,Total,Surface,pH,N/A,Surface
+pH,Total,,pH,N/A,
+pH,,Bottom,pH,N/A,Bottom
+pH,,Surface,pH,N/A,Surface
+pH,,,pH,N/A,
+Pheophytin a,Total,Bottom,Pheophytin a,Total,Bottom
+Pheophytin a,Total,Surface,Pheophytin a,Total,Surface
+Pheophytin a,Total,,Pheophytin a,Total,
+Phosphate-phosphorus,Dissolved,Bottom,Phosphate-phosphorus,Dissolved,Bottom
+Phosphate-phosphorus,Dissolved,Surface,Phosphate-phosphorus,Dissolved,Surface
+Phosphate-phosphorus,Dissolved,,Phosphate-phosphorus,Dissolved,
+Phosphate-phosphorus,Total,Bottom,Phosphate-phosphorus,Total,Bottom
+Phosphate-phosphorus,Total,Surface,Phosphate-phosphorus,Total,Surface
+Phosphate-phosphorus,Total,,Phosphate-phosphorus,Total,
+PO4-P,,Bottom,PO4-P,,Bottom
+PO4-P,,Surface,PO4-P,,Surface
+PO4-P,,,PO4-P,,
+PO4-P Dis,,Bottom,PO4-P Dis,,Bottom
+PO4-P Dis,,Surface,PO4-P Dis,,Surface
+PO4-P Dis,,,PO4-P Dis,,
+Potassium,Dissolved,Bottom,Potassium,Dissolved,Bottom
+Potassium,Dissolved,Surface,Potassium,Dissolved,Surface
+Potassium,Dissolved,,Potassium,Dissolved,
+Potassium,Total,Bottom,Potassium,Total,Bottom
+Potassium,Total,Surface,Potassium,Total,Surface
+Potassium,Total,,Potassium,Total,
+Salinity,Total,Bottom,Salinity,Total,Bottom
+Salinity,Total,Surface,Salinity,Total,Surface
+Salinity,Total,,Salinity,Total,
+SCBOD,,Bottom,SCBOD,,Bottom
+SCBOD,,Surface,SCBOD,,Surface
+SCBOD,,,SCBOD,,
+Selenium,Acid Soluble,Bottom,Selenium,Total,Bottom
+Selenium,Acid Soluble,Surface,Selenium,Total,Surface
+Selenium,Acid Soluble,,Selenium,Total,
+Selenium,Dissolved,Bottom,Selenium,Dissolved,Bottom
+Selenium,Dissolved,Surface,Selenium,Dissolved,Surface
+Selenium,Dissolved,,Selenium,Dissolved,
+Selenium,Total,Bottom,Selenium,Total,Bottom
+Selenium,Total,Surface,Selenium,Total,Surface
+Selenium,Total,,Selenium,Total,
+Settleable solids,,Bottom,Settleable solids,Total,Bottom
+Settleable solids,,Surface,Settleable solids,Total,Surface
+Settleable solids,,,Settleable solids,Total,
+Silica,Dissolved,Bottom,Silica,Dissolved,Bottom
+Silica,Dissolved,Surface,Silica,Dissolved,Surface
+Silica,Dissolved,,Silica,Dissolved,
+Silver,Acid Soluble,Bottom,Silver,Total,Bottom
+Silver,Acid Soluble,Surface,Silver,Total,Surface
+Silver,Acid Soluble,,Silver,Total,
+Silver,Dissolved,Bottom,Silver,Dissolved,Bottom
+Silver,Dissolved,Surface,Silver,Dissolved,Surface
+Silver,Dissolved,,Silver,Dissolved,
+Silver,Total,Bottom,Silver,Total,Bottom
+Silver,Total,Surface,Silver,Total,Surface
+Silver,Total,,Silver,Total,
+Silvex,Total,Bottom,Silvex,Total,Bottom
+Silvex,Total,Surface,Silvex,Total,Surface
+Silvex,Total,,Silvex,Total,
+Sodium,Dissolved,Bottom,Sodium,Dissolved,Bottom
+Sodium,Dissolved,Surface,Sodium,Dissolved,Surface
+Sodium,Dissolved,,Sodium,Dissolved,
+Sodium,Total,Bottom,Sodium,Total,Bottom
+Sodium,Total,Surface,Sodium,Total,Surface
+Sodium,Total,,Sodium,Total,
+Specific conductance,Total,Bottom,Specific conductance,Total,Bottom
+Specific conductance,Total,Surface,Specific conductance,Total,Surface
+Specific conductance,Total,,Specific conductance,Total,
+Specific conductance,,Bottom,Specific conductance,N/A,Bottom
+Specific conductance,,Surface,Specific conductance,N/A,Surface
+Specific conductance,,,Specific conductance,N/A,
+Sulfate,Dissolved,Bottom,Sulfate,Dissolved,Bottom
+Sulfate,Dissolved,Surface,Sulfate,Dissolved,Surface
+Sulfate,Dissolved,,Sulfate,Dissolved,
+Sulfate,Total,Bottom,Sulfate,Total,Bottom
+Sulfate,Total,Surface,Sulfate,Total,Surface
+Sulfate,Total,,Sulfate,Total,
+Sum of anions,Total,Bottom,Sum of anions,Total,Bottom
+Sum of anions,Total,Surface,Sum of anions,Total,Surface
+Sum of anions,Total,,Sum of anions,Total,
+Sum of cations,Total,Bottom,Sum of cations,Total,Bottom
+Sum of cations,Total,Surface,Sum of cations,Total,Surface
+Sum of cations,Total,,Sum of cations,Total,
+TDS,,Bottom,Total Dissolved Solids,Dissolved,Bottom
+TDS,,Surface,Total Dissolved Solids,Dissolved,Surface
+TDS,,,Total Dissolved Solids,Dissolved,
+"Temperature, water",,Bottom,"Temperature, water",N/A,Bottom
+"Temperature, water",,Surface,"Temperature, water",N/A,Surface
+"Temperature, water",,,"Temperature, water",N/A,
+TKN,,Bottom,TKN,,Bottom
+TKN,,Surface,TKN,,Surface
+TKN,,,TKN,,
+Total - N,,Bottom,Total - N,,Bottom
+Total - N,,Surface,Total - N,,Surface
+Total - N,,,Total - N,,
+Total Coliform,Total,Bottom,Total Coliform,Total,Bottom
+Total Coliform,Total,Surface,Total Coliform,Total,Surface
+Total Coliform,Total,,Total Coliform,Total,
+Total Coliform,,Bottom,Total Coliform,Total,Bottom
+Total Coliform,,Surface,Total Coliform,Total,Surface
+Total Coliform,,,Total Coliform,Total,
+Total dissolved solids,Total,Bottom,Total dissolved solids,Dissolved,Bottom
+Total dissolved solids,Total,Surface,Total dissolved solids,Dissolved,Surface
+Total dissolved solids,Total,,Total dissolved solids,Dissolved,
+Total dissolved solids,,Bottom,Total dissolved solids,Dissolved,Bottom
+Total dissolved solids,,Surface,Total dissolved solids,Dissolved,Surface
+Total dissolved solids,,,Total dissolved solids,Dissolved,
+Total fixed solids,,Bottom,Total fixed solids,Total,Bottom
+Total fixed solids,,Surface,Total fixed solids,Total,Surface
+Total fixed solids,,,Total fixed solids,Total,
+Total suspended solids,Total,Bottom,Total suspended solids,Total,Bottom
+Total suspended solids,Total,Surface,Total suspended solids,Total,Surface
+Total suspended solids,Total,,Total suspended solids,Total,
+Total suspended solids,,Bottom,Total suspended solids,Total,Bottom
+Total suspended solids,,Surface,Total suspended solids,Total,Surface
+Total suspended solids,,,Total suspended solids,Total,
+Total volatile solids,Total,Bottom,Total volatile solids,Total,Bottom
+Total volatile solids,Total,Surface,Total volatile solids,Total,Surface
+Total volatile solids,Total,,Total volatile solids,Total,
+Total volatile solids,,Bottom,Total volatile solids,Total,Bottom
+Total volatile solids,,Surface,Total volatile solids,Total,Surface
+Total volatile solids,,,Total volatile solids,Total,
+Toxaphene,Total,Bottom,Toxaphene,Total,Bottom
+Toxaphene,Total,Surface,Toxaphene,Total,Surface
+Toxaphene,Total,,Toxaphene,Total,
+TSS,,Bottom,Total suspended solids,Total,Bottom
+TSS,,Surface,Total suspended solids,Total,Surface
+TSS,,,Total suspended solids,Total,
+TURB,,Bottom,Turbidity,N/A,Bottom
+TURB,,Surface,Turbidity,N/A,Surface
+TURB,,,Turbidity,N/A,
+Turbidity,Total,Bottom,Turbidity,N/A,Bottom
+Turbidity,Total,Surface,Turbidity,N/A,Surface
+Turbidity,Total,,Turbidity,N/A,
+Turbidity,,Bottom,Turbidity,N/A,Bottom
+Turbidity,,Surface,Turbidity,N/A,Surface
+Turbidity,,,Turbidity,N/A,
+VSS,,Bottom,VSS,,Bottom
+VSS,,Surface,VSS,,Surface
+VSS,,,VSS,,
+Zinc,Acid Soluble,Bottom,Zinc,Total,Bottom
+Zinc,Acid Soluble,Surface,Zinc,Total,Surface
+Zinc,Acid Soluble,,Zinc,Total,
+Zinc,Dissolved,Bottom,Zinc,Dissolved,Bottom
+Zinc,Dissolved,Surface,Zinc,Dissolved,Surface
+Zinc,Dissolved,,Zinc,Dissolved,
+Zinc,Total,Bottom,Zinc,Total,Bottom
+Zinc,Total,Surface,Zinc,Total,Surface
+Zinc,Total,,Zinc,Total,
