@@ -90,9 +90,10 @@ nla_comp_choices=c('Phosphate-phosphorus','Chlorophyll a','Depth, Secchi disk de
 names(nla_comp_choices)=c('Total phosphorus (mg/L)','Chlorophyll a (ug/L)','Secchi depth (m)','Total nitrogen (mg/L)')
 
 # Define Sonde data parameter choices: 
-sonde_data_choices = c("Temperature", "Chl", "BGA", "pH", "Turbidity")
+sonde_data_choices = c("Temperature", "Chl", "BGA", "DO", "DOsat", "pH", "Turbidity")
 names(sonde_data_choices) = c("Temperature (Celsius)", "Chlorophyll a fluorescence (RFU)", 
-                              "Phycocyanin fluorescence (RFU)", "pH", "Turbidity (NTU)")
+                              "Phycocyanin fluorescence (RFU)", "Dissolved oxygen (mg/L)",
+                              "Dissolved oxygen saturation (%)", "pH", "Turbidity (NTU)")
 
 # Define Wind data parameter choices: 
 wind_data_choices1 = c("windspeed.m.s", "tau.wind")
@@ -358,6 +359,7 @@ ui <- fluidPage(
 			                                   "Provo Bay (4917446)", "Utah Lake South (4917715)"),
 			               choiceValues = c(4917365, 4917390, 4917446, 4917715), selected = c(4917365, 4917390, 4917446, 4917715)),
 			  radioButtons("sonde_data_plot_type", "Plot type:", choiceNames=c("Scatterplot","Boxplot"), choiceValues=c(1,2),inline=T),
+			  radioButtons("sonde_data_y_axis", "Y axis:", choiceNames=c("Linear scale","Log scale"), choiceValues=c(1,2),inline=T),
 			  selectInput("sonde_choice_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
 			    
 			),
@@ -1389,7 +1391,10 @@ server <- function(input, output){
 	      theme_classic(base_size = 20) +
 	      theme(legend.position = "top", axis.text.x = element_text(angle = 45, hjust = 1)) +
 	      labs(x = "", color = "Station", 
-	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))
+	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y]))) + 
+	      if(input$sonde_data_y_axis == 2) {scale_y_log10()} else 
+	        if(input$sonde_data_y_axis == 1) {scale_y_continuous()} 
+	      
 	})
 	
 	output$sonde_data_boxplot <- renderPlot({
@@ -1400,7 +1405,9 @@ server <- function(input, output){
 	      theme_classic(base_size = 20) +
 	      theme(legend.position = "top") +
 	      labs(x = "Month", fill = "Station", 
-	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))
+	           y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))+ 
+	    if(input$sonde_data_y_axis == 2) {scale_y_log10()} else 
+	      if(input$sonde_data_y_axis == 1) {scale_y_continuous()} 
 	  
 	})
 	
