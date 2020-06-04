@@ -398,7 +398,7 @@ setorder(translate_params,Parameter,Fraction,Depth)
 
 # WQP data were pulled and pre-processed in "/R_WQP/WQP_DataPull.r"
 # Load pre-processed data
-load('R_WQP/ul_data.RData')
+load('WQP/ul_data.RData')
 dim(wq_data) # 58369 xx
 
 # Rename fields to match Shiny code
