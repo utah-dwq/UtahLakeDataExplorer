@@ -361,6 +361,7 @@ ui <- fluidPage(
 			  radioButtons("sonde_data_plot_type", "Plot type:", choiceNames=c("Scatterplot","Boxplot"), choiceValues=c(1,2),inline=T),
 			  radioButtons("sonde_data_y_axis", "Y axis:", choiceNames=c("Linear scale","Log scale"), choiceValues=c(1,2),inline=T),
 			  selectInput("sonde_choice_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
+			  downloadButton("downloadData", "Download"),
 			    
 			),
 
@@ -787,6 +788,11 @@ server <- function(input, output){
 	    filter(SiteCode %in% input$sonde_data_stations)
 	  
 	})
+	
+	datasetInput <- reactive({
+	  sonde_data %>%
+	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
+	    filter(SiteCode %in% input$sonde_data_stations)	})
 	
 	filtered_wind_data <- reactive({
 	  wind_data %>%
@@ -1410,6 +1416,15 @@ server <- function(input, output){
 	      if(input$sonde_data_y_axis == 1) {scale_y_continuous()} 
 	  
 	})
+	
+	output$downloadData <- downloadHandler(
+	  filename = function() {
+	    paste(input$dataset, ".csv", sep = "")
+	  },
+	  content = function(file) {
+	    write.csv(datasetInput(), file, row.names = FALSE)
+	  }
+	)
 	
 	# Tab 8: Wind plot outputs
 	
