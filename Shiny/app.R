@@ -256,7 +256,9 @@ ui <- fluidPage(
 					uiOutput("chem_frac2"),
 					uiOutput("reldepth2"),
 					checkboxInput("chem_param2_log","log(x)",value=FALSE)
-				)
+				), 
+				downloadButton("downloadchemData", "Download"),
+				
 			),
 
 			####TSI tab:
@@ -361,7 +363,7 @@ ui <- fluidPage(
 			  radioButtons("sonde_data_plot_type", "Plot type:", choiceNames=c("Scatterplot","Boxplot"), choiceValues=c(1,2),inline=T),
 			  radioButtons("sonde_data_y_axis", "Y axis:", choiceNames=c("Linear scale","Log scale"), choiceValues=c(1,2),inline=T),
 			  selectInput("sonde_choice_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
-			  downloadButton("downloadData", "Download"),
+			  downloadButton("downloadsondeData", "Download"),
 			    
 			),
 
@@ -789,7 +791,7 @@ server <- function(input, output){
 	  
 	})
 	
-	datasetInput <- reactive({
+	datasetsondeInput <- reactive({
 	  sonde_data %>%
 	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
 	    filter(SiteCode %in% input$sonde_data_stations)	})
@@ -1043,6 +1045,14 @@ server <- function(input, output){
 		
 	})
 	
+	output$downloadchemData <- downloadHandler(
+	  filename = function() {
+	    paste(input$dataset, ".csv", sep = "")
+	  },
+	  content = function(file) {
+	    write.csv(wq_data, file, row.names = FALSE)
+	  }
+	)
 	
 	#Tab 3: TSI plot outputs
 	output$tsi_plot=renderPlot({
@@ -1417,12 +1427,12 @@ server <- function(input, output){
 	  
 	})
 	
-	output$downloadData <- downloadHandler(
+	output$downloadsondeData <- downloadHandler(
 	  filename = function() {
 	    paste(input$dataset, ".csv", sep = "")
 	  },
 	  content = function(file) {
-	    write.csv(datasetInput(), file, row.names = FALSE)
+	    write.csv(datasetsondeInput(), file, row.names = FALSE)
 	  }
 	)
 	
