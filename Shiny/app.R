@@ -258,7 +258,6 @@ ui <- fluidPage(
 					checkboxInput("chem_param2_log","log(x)",value=FALSE)
 				), 
 				downloadButton("downloadchemData", "Download"),
-				
 			),
 
 			####TSI tab:
@@ -364,6 +363,7 @@ ui <- fluidPage(
 			  radioButtons("sonde_data_y_axis", "Y axis:", choiceNames=c("Linear scale","Log scale"), choiceValues=c(1,2),inline=T),
 			  selectInput("sonde_choice_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
 			  downloadButton("downloadsondeData", "Download"),
+			  
 			    
 			),
 
@@ -423,6 +423,8 @@ ui <- fluidPage(
 			),
 			
 			###Help text
+			br(),
+			uiOutput("tab"),
 			br(),
 			helpText("For help with this tool, or to report a bug, please contact Jake Vander Laan, UDWQ, jvander@utah.gov, (801) 536-4350.")
 
@@ -608,7 +610,10 @@ server <- function(input, output){
 		selectInput("reldepth2", "Sample depth:", reactive_objects$chem_reld2_choices, selected=input$reldepth2,selectize=T)
 	})
 
-
+	output$tab <- renderUI({
+	  tagList("For additional data, visit the", a("Utah Lake GitHub repository", href = "https://github.com/KateriSalk/UtahLakeData"))
+	})
+	
 	output$map_param <- renderUI({
 		selectInput("map_param", "Parameter:", reactive_objects$param_choices, selected=input$map_param,selectize=T)
 	})
@@ -1046,9 +1051,7 @@ server <- function(input, output){
 	})
 	
 	output$downloadchemData <- downloadHandler(
-	  filename = function() {
-	    paste(input$dataset, ".csv", sep = "")
-	  },
+	  filename = "wq_data.csv",
 	  content = function(file) {
 	    write.csv(wq_data, file, row.names = FALSE)
 	  }
@@ -1428,11 +1431,9 @@ server <- function(input, output){
 	})
 	
 	output$downloadsondeData <- downloadHandler(
-	  filename = function() {
-	    paste(input$dataset, ".csv", sep = "")
-	  },
+	  filename = "sonde_data.csv",
 	  content = function(file) {
-	    write.csv(datasetsondeInput(), file, row.names = FALSE)
+	    write.csv(sonde_data, file, row.names = FALSE)
 	  }
 	)
 	
