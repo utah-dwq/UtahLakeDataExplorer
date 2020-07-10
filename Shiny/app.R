@@ -161,26 +161,26 @@ ui <- fluidPage(
 	sidebarLayout(
 		sidebarPanel(
 			###Help texts
-			conditionalPanel(condition="input.tabs==1",helpText("This tool shows long-term and seasonal variation in Utah Lake surface water elevations by plotting against year and month.")),
-			conditionalPanel(condition="input.tabs==2",helpText("This tool shows time series (yearly & monthly), boxplots by site, and pairwise scatter plots of selected water quality parameters .")),
-			conditionalPanel(condition="input.tabs==3",helpText("This tool plots Carlson TSI values for Utah Lake as time series, boxplots, or pairwise comparisons following Havens and Carlson (2011).")),
-			conditionalPanel(condition="input.tabs==4",helpText("This tool allows comparison of nutrient and chlorophyll a relationships between Utah Lake and EPA's National Lakes Assessment (NLA, 2012).")),
+			conditionalPanel(condition="input.tabs==1",tagList("This tool shows long-term and seasonal variation in Utah Lake surface water elevations by plotting against year and month.")),
+			conditionalPanel(condition="input.tabs==2",tagList("This tool shows time series (yearly & monthly), boxplots by site, and pairwise scatter plots of selected water quality parameters .")),
+			conditionalPanel(condition="input.tabs==3",tagList("This tool plots Carlson TSI values for Utah Lake as time series, boxplots, or pairwise comparisons following Havens and Carlson (2011).")),
+			conditionalPanel(condition="input.tabs==4",tagList("This tool allows comparison of nutrient and chlorophyll a relationships between Utah Lake and EPA's National Lakes Assessment (NLA, 2012).")),
 			conditionalPanel(condition="input.tabs==5",
-				helpText("This tool estimates lake-wide values for selected parameters, fractions, depths, and time periods via inverse path distance weighted interpolation."),
-				helpText("Please be patient - this type of interpolation accounts for land-barriers between sites, but is  data intensive and therefore slow."),
-				helpText("Select desired parameters, then click 'Interpolate' to generate the map."),
-				helpText("Numbers plotted on the map show available sample sizes at each site used for interpolation.")
+				tagList("This tool estimates lake-wide values for selected parameters, fractions, depths, and time periods via inverse path distance weighted interpolation."),
+				tagList("Please be patient - this type of interpolation accounts for land-barriers between sites, but is  data intensive and therefore slow."),
+				tagList("Select desired parameters, then click 'Interpolate' to generate the map."),
+				tagList("Numbers plotted on the map show available sample sizes at each site used for interpolation.")
 			),
 			conditionalPanel(condition="input.tabs==6 & input.phyto_plot_type==1",
-				helpText("This tool shows long-term and seasonal variation in Utah Lake phytoplankton abundances and relative abundances against year and month."),
-				helpText("HAB sample types were only analyzed for potentially harmful taxa. Total phytoplankton sample types were analyzed for all taxa present.")
+				tagList("This tool shows long-term and seasonal variation in Utah Lake phytoplankton abundances and relative abundances against year and month."),
+				tagList("HAB sample types were only analyzed for potentially harmful taxa. Total phytoplankton sample types were analyzed for all taxa present.")
 			),	
 			conditionalPanel(condition="input.tabs==6 & input.phyto_plot_type==2",
-				helpText("This tool shows abundances or relative abundances of selected phytoplankton at sampling locations over the selected years & months."),
-				helpText("Marker sizes are scaled by the average abundance or relative abundance observed at each location."),
-				helpText("Click on a marker to see the monitoring location ID and value associated with that point (rounded to 2 significant digits)."),
-				helpText("HAB sample types were only analyzed for potentially harmful taxa. Total phytoplankton sample types were analyzed for all taxa present."),
-				helpText("Dynamic z-scaling scales marker sizes based on selected data. Fixed z-scaling defines a single scale of marker sizes for all plots; enabling visual comparisons among different taxa, time periods, or sample types.")
+				tagList("This tool shows abundances or relative abundances of selected phytoplankton at sampling locations over the selected years & months."),
+				tagList("Marker sizes are scaled by the average abundance or relative abundance observed at each location."),
+				tagList("Click on a marker to see the monitoring location ID and value associated with that point (rounded to 2 significant digits)."),
+				tagList("HAB sample types were only analyzed for potentially harmful taxa. Total phytoplankton sample types were analyzed for all taxa present."),
+				tagList("Dynamic z-scaling scales marker sizes based on selected data. Fixed z-scaling defines a single scale of marker sizes for all plots; enabling visual comparisons among different taxa, time periods, or sample types.")
 			),
 
 			
@@ -350,11 +350,14 @@ ui <- fluidPage(
 			### Sonde data tab:
 			conditionalPanel(
 			  condition="input.tabs==7",
-			  helpText("This tool shows the conditions across sites in Utah Lake as measured by sensors deployed on sondes. 
+			  tagList("This tool shows the conditions across sites in Utah Lake as measured by sensors deployed on sondes. 
 			           Data were collected in 15-minute intervals and averaged into daily values."),
 			  sliderInput(inputId="sonde_data_plot_months","Month range:",
 			              min=4,max=11,
 			              value=c(1, 12),sep="", step=1),
+			  sliderInput(inputId="sonde_data_plot_years","Year range:",
+			              min=2016,max=2019,
+			              value=c(2016, 2019),sep="", step=1),
 			  checkboxGroupInput("sonde_data_stations","Include:",
 			                     choiceNames=c("Utah Lake North (4917365)", "Utah Lake Mid (4917390)", 
 			                                   "Provo Bay (4917446)", "Utah Lake South (4917715)"),
@@ -374,14 +377,14 @@ ui <- fluidPage(
 			           resulting in high turbidity and reduced clarity.
 			           This tool explores the theoretical and observational relationships between turbidity, wind speed, 
 			           and shear stress due to wave activity."),
-			  helpText("Theoretical tool: calculate wave shear experienced by sediments in response to changing wind and basin shape."),
+			  tagList("Theoretical tool: calculate wave shear experienced by sediments in response to changing wind and basin shape."),
 			  sliderInput(inputId="shear_calculation_depth","Water depth (m):",
 			              min = 1,max = 10, value = 3, sep="", step=0.5),
 			  sliderInput(inputId="shear_calculation_wind","Wind speed (m/s):",
 			              min = 0,max = 10, value = 2.5, sep="", step=0.5),
 			  sliderInput(inputId="shear_calculation_fetch","Fetch (km):",
 			              min = 5,max = 30, value = 24, sep="", step=1),
-			  helpText("Observational tool: explore actual conditions in Utah Lake as measured by sensors on a data sonde. 
+			  tagList("Observational tool: explore actual conditions in Utah Lake as measured by sensors on a data sonde. 
 			           The dotted line on the wave shear axis represents critical shear, the shear value at which sediments are resuspended."),
 			  checkboxGroupInput("wind_data_stations","Include:",
 			                     choiceNames=c("Utah Lake North (4917365)", "Utah Lake Mid (4917390)", 
@@ -394,10 +397,11 @@ ui <- fluidPage(
 			### Turbidity and macrophytes data tab:
 			conditionalPanel(
 			  condition="input.tabs==9",
-			  helpText("Submerged aquatic vegetation (macrophytes) reduces the shear experienced by the sediments by reducing wave action.
-			           This tool calculates the wave shear from observed dates based on the theoretical reduction provided by macrophytes."),
-			  helpText("The vertical line represents the critical shear, the shear value at which sediments are resuspended.
-			           Observations below critical shear will not experience sediment resuspension due to wave action."),
+			  tagList("Submerged aquatic vegetation (macrophytes) reduces the shear experienced by the sediments by reducing wave action.
+			           This tool calculates the wave shear from observed dates based on the theoretical reduction provided by macrophytes.
+			           The calculated wave shear is then compared to the calculated critical shear,
+			          the shear value at which sediments are resuspended (see Wind and Turbidity tab).
+			          Observations below critical shear will not experience sediment resuspension due to wave action."),
 			  sliderInput(inputId="shear_reduction","% Reduction:",
 			              min = 0, max = 80, value = 0, sep="", step=5),
 			  radioButtons("macrophyte_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
@@ -406,13 +410,14 @@ ui <- fluidPage(
 			## Light extinction data tab:
 			conditionalPanel(
 			  condition="input.tabs==10",
-			  helpText("This tool illustrates the rapid attenuation of light with depth in Utah Lake. 
+			  tagList("This tool illustrates the rapid attenuation of light with depth in Utah Lake. 
 			           Light is measured as photosynthetically active radiation (PAR)."),
 			  sliderInput(inputId="PAR_data_plot_months","Month range:",
 			              min=min(PAR_data$Month,na.rm=T),max=max(PAR_data$Month,na.rm=T),
 			              value=c(4, 9),sep="", step=1),
+			  tagList("(all data are from 2019)"),
 			  radioButtons("PAR_data_stations","Include:",choiceNames=c("Utah Lake", "Provo Bay", "All"),choiceValues=c(1,2,3),selected=3),
-			  helpText("The degree of light attenuation can be measured by the light attenuation coefficient (k)
+			  tagList("The degree of light attenuation can be measured by the light attenuation coefficient (k)
 			           and Secchi depth. Both of these metrics are related to light absorbing and light scattering consituents in the water column."),
 			  selectInput("clarity_choice_x","Parameter x:",choices=clarity_data_choices_x, selected="Turbidity"),
 			  selectInput("clarity_choice_y","Parameter y:",choices=clarity_data_choices_y, selected="k"),
@@ -473,9 +478,11 @@ ui <- fluidPage(
 			  condition = "input.tabs == 8",
 			  br(),
 			  br(),
+			  h3(textOutput("theoreticalcaption")),
 			  withMathJax(uiOutput("theoretical_wave_shear")),
 			  br(),
 			  br(),
+			  h3(textOutput("observedcaption")),
 			  plotOutput("wind_data_plot", width="800px", height="500px")
 			),
 			conditionalPanel(
@@ -791,14 +798,18 @@ server <- function(input, output){
 
 	filtered_sonde_data <- reactive({
 	  sonde_data %>%
+	    mutate(Year = year(date)) %>%
 	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
+	    filter(Year >= input$sonde_data_plot_years[1] & Year <= input$sonde_data_plot_years[2]) %>%
 	    filter(SiteCode %in% input$sonde_data_stations)
 	  
 	})
 	
 	datasetsondeInput <- reactive({
 	  sonde_data %>%
+	    mutate(Year = year(date)) %>%
 	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
+	    filter(Year >= input$sonde_data_plot_years[1] & Year <= input$sonde_data_plot_years[2]) %>%
 	    filter(SiteCode %in% input$sonde_data_stations)	})
 	
 	filtered_wind_data <- reactive({
@@ -1438,11 +1449,13 @@ server <- function(input, output){
 	)
 	
 	# Tab 8: Wind plot outputs
+	output$theoreticalcaption = renderText({"Theoretical conditions"})
 	
 	output$theoretical_wave_shear <- renderUI({
-	  withMathJax(paste0("$$\\text{Theoretical wave shear (N/m }^2 ) =", theoretical_wave_shear(),"$$"))
+	  withMathJax(paste0("$$\\text{wave shear (N/m }^2 ) =", theoretical_wave_shear(),"$$"))
 	 })
 	
+	output$observedcaption = renderText({"Observed conditions"})
 	
 	output$wind_data_plot <- renderPlot({
 	  ggplot(data = filtered_wind_data(), 
@@ -1467,9 +1480,9 @@ server <- function(input, output){
 	output$macrophyte_data_plot <- renderPlot({
 	  ggplot(data = adjusted_wind_data(), 
 	         aes_string(x = "tau.wind.calculated")) +
-	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_histogram(fill = "#fc9d6fff", color = "black", alpha = 0.8) +
 	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
-	    labs(x = expression("Wave shear (N/m"^2*")")) +
+	    labs(x = expression("Wave shear (N/m"^2*")"), y = "# of samples") +
 	  	theme_classic(base_size = 20) +
 	    scale_x_continuous(expand = c(0, 0)) + 
 	    scale_y_continuous(expand = c(0, 0))
@@ -1482,8 +1495,9 @@ server <- function(input, output){
 	output$macrophyte_data_plot_provo <- renderPlot({
 	  ggplot(data = adjusted_wind_data_provo(), 
 	         aes_string(x = "tau.wind.calculated")) +
-	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_histogram(fill = "#fc9d6fff", color = "black", alpha = 0.8) +
 	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
+	    labs(x = expression("Wave shear (N/m"^2*")"), y = "# of samples") +
 	    theme_classic(base_size = 20) +
 	    scale_x_continuous(expand = c(0, 0)) + 
 	    scale_y_continuous(expand = c(0, 0))
@@ -1496,8 +1510,9 @@ server <- function(input, output){
 	output$macrophyte_data_plot_utah <- renderPlot({
 	  ggplot(data = adjusted_wind_data_utah(), 
 	         aes_string(x = "tau.wind.calculated")) +
-	    geom_density(fill = "#fc9d6fff", alpha = 0.8) +
+	    geom_histogram(fill = "#fc9d6fff", color = "black", alpha = 0.8) +
 	    geom_vline(xintercept = 0.16, lty = 2, size = 1) +
+	    labs(x = expression("Wave shear (N/m"^2*")"), y = "# of samples") +
 	    theme_classic(base_size = 20) +
 	    scale_x_continuous(expand = c(0, 0)) + 
 	    scale_y_continuous(expand = c(0, 0))
@@ -1511,10 +1526,10 @@ server <- function(input, output){
 	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
 	    scale_y_reverse() +
 	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
-	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1, guide = guide_legend(keywidth = unit (3, "cm"))) +
 	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
 	    theme_classic(base_size = 20) +
-	    theme(legend.position = "top")
+	    theme(legend.position = "top") 
 	})
 	
 	output$PAR_data_plot_provo <- renderPlot({
@@ -1523,7 +1538,7 @@ server <- function(input, output){
 	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
 	    scale_y_reverse() +
 	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
-	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1, guide = guide_legend(keywidth = unit (3, "cm"))) +
 	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
 	    theme_classic(base_size = 20) +
 	    theme(legend.position = "top")
@@ -1535,7 +1550,7 @@ server <- function(input, output){
 	    geom_smooth(method = "lm", formula = y ~ log(x), se = FALSE, aes(group = Month)) +
 	    scale_y_reverse() +
 	    facet_wrap(vars(MonitoringLocationIdentifier), scales = "free_y") +
-	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1) +
+	    scale_color_viridis_c(option = "magma", end = 0.8, direction = -1, guide = guide_legend(keywidth = unit (3, "cm"))) +
 	    labs(x = expression(PAR ~ (mu*mol ~ m^{-2} ~ s^{-1})), y = "Depth (m)") +
 	    theme_classic(base_size = 20) +
 	    theme(legend.position = "top")
