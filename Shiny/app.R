@@ -199,7 +199,7 @@ ui <- fluidPage(
 			
 			conditionalPanel(
 				condition="input.tabs!=1 & input.tabs!=6 & input.tabs!=7 & input.tabs!=8 & input.tabs!=9 & input.tabs!=10",
-				sliderInput(inputId="plot_months","Month range:",min=min(lake_elev_data$Month),max=max(lake_elev_data$Month),value=c(min(lake_elev_data$Month),max(lake_elev_data$Month)),sep="",step=1),
+				sliderInput(inputId="plot_months","Month range:",min=min(wq_data$Month),max=max(wq_data$Month),value=c(min(wq_data$Month),max(wq_data$Month)),sep="",step=1),
 				#checkboxGroupInput("sites","Include:",choices=c("Utah Lake","Provo Bay"),selected=c("Utah Lake","Provo Bay"))
 				conditionalPanel(
 					condition="input.tabs!=5 & input.tabs!=6",

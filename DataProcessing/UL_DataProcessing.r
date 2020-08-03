@@ -235,7 +235,7 @@ phyto_data[,Genus:=sub(' .*','',Genus)] # Grab the first word only
 phyto_data[,.N,by=Genus]
 
 # Temporarily set Date='2008' to '1/1/2008'
-phyto_data[Date=='2008',Date:='1/1/2008']
+#phyto_data[Date=='2008',Date:='1/1/2008']
 
 # Convert to Date
 phyto_data[,Date:=as.Date(Date,format='%m/%d/%Y',tz='UTC')]
@@ -244,8 +244,9 @@ phyto_data[,Date:=as.Date(Date,format='%m/%d/%Y',tz='UTC')]
 phyto_data[,Year:=year(Date)]
 phyto_data[,Month:=month(Date)]
 
-# Set Date="2008-01-01" to NA
-phyto_data[Date==as.Date('2008-01-01'),Date:=NA]
+# Set Date="1905-06-30" to NA
+phyto_data[Date==as.Date('1905-06-30'),Date:=NA]
+phyto_data[Year=='1905',Year:=NA]
 
 # Convert to numeric (don't use integer)
 head(sort(unique(phyto_data$CellperML)),50)
@@ -295,6 +296,9 @@ phyto_data[,.N,by=Division]
 
 # Set Division=NA to Other
 phyto_data[is.na(Division),Division:='Other']
+
+# single incidence of Division = "c" should be Cyanophyta (Aphanizomenon)
+phyto_data <- phyto_data[!(phyto_data$Division == "c")]
 
 # Check Genus
 phyto_data[,.N,by=Genus]
