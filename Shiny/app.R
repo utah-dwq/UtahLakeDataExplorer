@@ -356,12 +356,13 @@ ui <- fluidPage(
 			              min=4,max=11,
 			              value=c(1, 12),sep="", step=1),
 			  sliderInput(inputId="sonde_data_plot_years","Year range:",
-			              min=2016,max=2019,
-			              value=c(2016, 2019),sep="", step=1),
+			              min=2016,max=2020,
+			              value=c(2016, 2020),sep="", step=1),
 			  checkboxGroupInput("sonde_data_stations","Include:",
 			                     choiceNames=c("Utah Lake North (4917365)", "Utah Lake Mid (4917390)", 
 			                                   "Provo Bay (4917446)", "Utah Lake South (4917715)"),
 			               choiceValues = c(4917365, 4917390, 4917446, 4917715), selected = c(4917365, 4917390, 4917446, 4917715)),
+			  radioButtons("sonde_data_type", "Daily conditions:", choiceNames=c("Mean","Minimum", "Maximum"), choiceValues=c(1,2,3),inline=T),
 			  radioButtons("sonde_data_plot_type", "Plot type:", choiceNames=c("Scatterplot","Boxplot"), choiceValues=c(1,2),inline=T),
 			  radioButtons("sonde_data_y_axis", "Y axis:", choiceNames=c("Linear scale","Log scale"), choiceValues=c(1,2),inline=T),
 			  selectInput("sonde_choice_y","Parameter y:",choices=sonde_data_choices, selected="Temperature"),
@@ -467,12 +468,28 @@ ui <- fluidPage(
 				leafletOutput("phyto_map_output",width="800px",height="800px")
 			), 
 			conditionalPanel(
-			  condition = "input.tabs == 7 & input.sonde_data_plot_type == 1",
-			  plotOutput("sonde_data_scatterplot", width="800px", height="500px")
+			  condition = "input.tabs == 7 & input.sonde_data_type == 1 & input.sonde_data_plot_type == 1",
+			  plotOutput("sonde_data_mean_scatterplot", width="800px", height="500px")
 			),
 			conditionalPanel(
-			  condition = "input.tabs == 7 & input.sonde_data_plot_type == 2",
-			  plotOutput("sonde_data_boxplot", width="800px", height="500px")
+			  condition = "input.tabs == 7 & input.sonde_data_type == 1 & input.sonde_data_plot_type == 2",
+			  plotOutput("sonde_data_mean_boxplot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 7 & input.sonde_data_type == 2 & input.sonde_data_plot_type == 1",
+			  plotOutput("sonde_data_min_scatterplot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 7 & input.sonde_data_type == 2 & input.sonde_data_plot_type == 2",
+			  plotOutput("sonde_data_min_boxplot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 7 & input.sonde_data_type == 3 & input.sonde_data_plot_type == 1",
+			  plotOutput("sonde_data_max_scatterplot", width="800px", height="500px")
+			),
+			conditionalPanel(
+			  condition = "input.tabs == 7 & input.sonde_data_type == 3 & input.sonde_data_plot_type == 2",
+			  plotOutput("sonde_data_max_boxplot", width="800px", height="500px")
 			),
 			conditionalPanel(
 			  condition = "input.tabs == 8",
@@ -796,8 +813,8 @@ server <- function(input, output){
 	})
 	
 
-	filtered_sonde_data <- reactive({
-	  sonde_data %>%
+	filtered_sonde_data_mean <- reactive({
+	  sonde_data_mean %>%
 	    mutate(Year = year(date)) %>%
 	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
 	    filter(Year >= input$sonde_data_plot_years[1] & Year <= input$sonde_data_plot_years[2]) %>%
@@ -805,12 +822,31 @@ server <- function(input, output){
 	  
 	})
 	
-	datasetsondeInput <- reactive({
-	  sonde_data %>%
+	filtered_sonde_data_min <- reactive({
+	  sonde_data_min %>%
 	    mutate(Year = year(date)) %>%
 	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
 	    filter(Year >= input$sonde_data_plot_years[1] & Year <= input$sonde_data_plot_years[2]) %>%
-	    filter(SiteCode %in% input$sonde_data_stations)	})
+	    filter(SiteCode %in% input$sonde_data_stations)
+	  
+	})
+	
+	filtered_sonde_data_max <- reactive({
+	  sonde_data_max %>%
+	    mutate(Year = year(date)) %>%
+	    filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
+	    filter(Year >= input$sonde_data_plot_years[1] & Year <= input$sonde_data_plot_years[2]) %>%
+	    filter(SiteCode %in% input$sonde_data_stations)
+	  
+	})
+	
+	
+	# datasetsondeInput <- reactive({
+	#   sonde_data_mean %>%
+	#     mutate(Year = year(date)) %>%
+	#     filter(Month >= input$sonde_data_plot_months[1] & Month <= input$sonde_data_plot_months[2]) %>%
+	#     filter(Year >= input$sonde_data_plot_years[1] & Year <= input$sonde_data_plot_years[2]) %>%
+	#     filter(SiteCode %in% input$sonde_data_stations)	})
 	
 	filtered_wind_data <- reactive({
 	  wind_data %>%
@@ -1412,8 +1448,8 @@ server <- function(input, output){
 	
 	#Tab 7: Sonde plot outputs
 
-	output$sonde_data_scatterplot <- renderPlot({
-	    ggplot(data = filtered_sonde_data(), 
+	output$sonde_data_mean_scatterplot <- renderPlot({
+	    ggplot(data = filtered_sonde_data_mean(), 
 	           aes_string(x = "date", y = input$sonde_choice_y, color = "as.factor(SiteCode)")) +
 	      geom_point(size = 2, alpha = 0.8) +
 	      scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
@@ -1427,8 +1463,8 @@ server <- function(input, output){
 	      
 	})
 	
-	output$sonde_data_boxplot <- renderPlot({
-	  ggplot(data = filtered_sonde_data(), 
+	output$sonde_data_mean_boxplot <- renderPlot({
+	  ggplot(data = filtered_sonde_data_mean(), 
 	         aes_string(x = "as.factor(Month)", y = input$sonde_choice_y, fill = "as.factor(SiteCode)")) +
 	      geom_boxplot(alpha = 0.8) +
 	      scale_fill_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
@@ -1441,10 +1477,74 @@ server <- function(input, output){
 	  
 	})
 	
+	output$sonde_data_min_scatterplot <- renderPlot({
+	  ggplot(data = filtered_sonde_data_min(), 
+	         aes_string(x = "date", y = input$sonde_choice_y, color = "as.factor(SiteCode)")) +
+	    geom_point(size = 2, alpha = 0.8) +
+	    scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	    scale_x_date(date_breaks = "2 months", date_labels = "%b-%y") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top", axis.text.x = element_text(angle = 45, hjust = 1)) +
+	    labs(x = "", color = "Station", 
+	         y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y]))) + 
+	    if(input$sonde_data_y_axis == 2) {scale_y_log10()} else 
+	      if(input$sonde_data_y_axis == 1) {scale_y_continuous()} 
+	  
+	})
+	
+	output$sonde_data_min_boxplot <- renderPlot({
+	  ggplot(data = filtered_sonde_data_min(), 
+	         aes_string(x = "as.factor(Month)", y = input$sonde_choice_y, fill = "as.factor(SiteCode)")) +
+	    geom_boxplot(alpha = 0.8) +
+	    scale_fill_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top") +
+	    labs(x = "Month", fill = "Station", 
+	         y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))+ 
+	    if(input$sonde_data_y_axis == 2) {scale_y_log10()} else 
+	      if(input$sonde_data_y_axis == 1) {scale_y_continuous()} 
+	  
+	})
+	
+	output$sonde_data_max_scatterplot <- renderPlot({
+	  ggplot(data = filtered_sonde_data_max(), 
+	         aes_string(x = "date", y = input$sonde_choice_y, color = "as.factor(SiteCode)")) +
+	    geom_point(size = 2, alpha = 0.8) +
+	    scale_color_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	    scale_x_date(date_breaks = "2 months", date_labels = "%b-%y") +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top", axis.text.x = element_text(angle = 45, hjust = 1)) +
+	    labs(x = "", color = "Station", 
+	         y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y]))) + 
+	    if(input$sonde_data_y_axis == 2) {scale_y_log10()} else 
+	      if(input$sonde_data_y_axis == 1) {scale_y_continuous()} 
+	  
+	})
+	
+	output$sonde_data_max_boxplot <- renderPlot({
+	  ggplot(data = filtered_sonde_data_max(), 
+	         aes_string(x = "as.factor(Month)", y = input$sonde_choice_y, fill = "as.factor(SiteCode)")) +
+	    geom_boxplot(alpha = 0.8) +
+	    scale_fill_viridis_d(option = "magma", end = 0.8, begin = 0.2) +
+	    theme_classic(base_size = 20) +
+	    theme(legend.position = "top") +
+	    labs(x = "Month", fill = "Station", 
+	         y = paste("\n", names(sonde_data_choices[sonde_data_choices == input$sonde_choice_y])))+ 
+	    if(input$sonde_data_y_axis == 2) {scale_y_log10()} else 
+	      if(input$sonde_data_y_axis == 1) {scale_y_continuous()} 
+	  
+	})
+	
 	output$downloadsondeData <- downloadHandler(
-	  filename = "sonde_data.csv",
-	  content = function(file) {
-	    write.csv(sonde_data, file, row.names = FALSE)
+	  filename = function () if(input$sonde_data_type == 1) "sonde_data_dailymean.csv"
+	  else if(input$sonde_data_type == 2) "sonde_data_dailymin.csv"
+	  else "sonde_data_dailymax.csv",
+	  content = function(file) if(input$sonde_data_type == 1) {
+	    write.csv(sonde_data_mean, file, row.names = FALSE)
+	  } else if(input$sonde_data_type == 2) {
+	    write.csv(sonde_data_min, file, row.names = FALSE)
+	  } else  {
+	    write.csv(sonde_data_max, file, row.names = FALSE)
 	  }
 	)
 	

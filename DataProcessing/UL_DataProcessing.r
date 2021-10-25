@@ -159,14 +159,14 @@ setorder(storageElev,Elevation_ft)
 
 # Source file is "ULDB_Lake_Elevation_All.xlsx", "UL Elevation_Avg Monthly" tab.
 # This dataset is dynamic.
-# Most recent value is Dec 2018.
+# Most recent value is Dec 2020
 
 # Create Month LUT
 monthLUT=data.table(Month=1:12,MonthName=month.abb,MonthLab=toupper(month.abb))
 
 # Load data
 lake_elev_data=fread('Data/UL_Elevation_Avg_Monthly.csv',sep=',',header=T,skip=0,check.names=T,na.strings=na.strings)
-dim(lake_elev_data) # 1044 xx
+dim(lake_elev_data) # 1068 4
 
 # Add Month
 intersect(names(lake_elev_data),names(monthLUT)) # MonthLab
@@ -402,8 +402,9 @@ setorder(translate_params,Parameter,Fraction,Depth)
 
 # WQP data were pulled and pre-processed in "/R_WQP/WQP_DataPull.r"
 # Load pre-processed data
-load('WQP/ul_data.RData')
-dim(wq_data) # 58369 xx
+wq_data <- read.csv('WQP/ul_data_wqp_processed_2021-10-21.csv')
+# load('WQP/ul_data.RData')
+dim(wq_data) # 100080 43
 
 # Rename fields to match Shiny code
 setnames(wq_data,'ActivityStartDate','Date')
@@ -411,31 +412,31 @@ setnames(wq_data,'ResultMeasure.MeasureUnitCode','Result.Unit')
 setnames(wq_data,'ResultMeasureValue','Result.Value')
 
 # Check ResultStatusIdentifier
-wq_data[,.N,by=ResultStatusIdentifier]
+setDT(wq_data)[,.N,keyby=ResultStatusIdentifier]
 #    ResultStatusIdentifier     N
-# 1:                  Final 15664
-# 2:               Accepted 42605
-# 3:            Provisional   100
+# 1:                  Final 15686
+# 2:               Accepted 84304
+# 3:            Provisional   90
 
 # Remove Provisional data
 wq_data=wq_data[!ResultStatusIdentifier %in% c('Provisional')]
-dim(wq_data) # 58269 xx
+dim(wq_data) # 99990 43
 
 # Check RelativeDepth
 wq_data[,.N,by=RelativeDepth]
 #    RelativeDepth     N
-# 1:          <NA> 41923
-# 2:       Surface 15389
+# 1:          <NA> 80454
+# 2:       Surface 18579
 # 3:        Bottom   957
 
 # Check for SampleDepthValue when RelativeDepth=NA
-wq_data[is.na(SampleDepthValue) & is.na(RelativeDepth),.N] # 4665
+wq_data[is.na(SampleDepthValue) & is.na(RelativeDepth),.N] # 4784
 
 # Check Depth Units
 tmp=wq_data[!is.na(SampleDepthValue),.N,by=SampleDepthUnit]
 tmp
 #    SampleDepthUnit     N
-# 1:               m 37258
+# 1:               m 75670
 
 # Standardize Depth units - Manually adjust code below as needed
 if(nrow(tmp)>1) cat('STOP - Multiple depth units. Manually adjust code below and fix.')
@@ -448,9 +449,9 @@ wq_data[is.na(RelativeDepth) & SampleDepthValue>1,RelativeDepth:='Bottom']
 # Check RelativeDepth
 wq_data[,.N,by=RelativeDepth]
 #    RelativeDepth     N
-# 1:          <NA>  4665
-# 2:       Surface 35308
-# 3:        Bottom 18296
+# 1:          <NA>  4784
+# 2:       Surface 51761
+# 3:        Bottom 43445
 
 
 
@@ -472,14 +473,14 @@ wq_data[,ResultSampleFractionText:=NULL]
 wq_data[,RelativeDepth:=NULL]
 
 # Remove Fraction=NA
-sum(is.na(wq_data$Fraction)) # 5923
+sum(is.na(wq_data$Fraction)) # 13357
 wq_data=wq_data[!is.na(Fraction),]
-dim(wq_data) # 52346 xx
+dim(wq_data) # 86633 43
 
 # Remove Depth=NA
-sum(is.na(wq_data$Depth)) # 4402
+sum(is.na(wq_data$Depth)) # 4497
 wq_data=wq_data[!is.na(Depth),]
-dim(wq_data) # 47944 xx
+dim(wq_data) # 82136 43
 
 
 
@@ -533,15 +534,15 @@ if(nrow(tmp)>0) cat('STOP - Multiple units are present. Manually adjust code bel
 # Check NDs
 wq_data[,.N,by=ResultDetectionConditionText]
 #          ResultDetectionConditionText     N
-# 1:                       Not Detected  5371
-# 2:                               <NA> 42256
-# 3: Present Above Quantification Limit   312
+# 1:                       Not Detected  7153
+# 2:                               <NA> 74599
+# 3: Present Above Quantification Limit   379
 # 4: Present Below Quantification Limit     5
 
 # Check that all NDs have blank values
 wq_data[ResultDetectionConditionText=='Not Detected',.N,by=is.na(Result.Value)]
 #    is.na    N
-# 1:  TRUE 5371
+# 1:  TRUE 7153
 
 # Check that MDL units and value units match
 tmp=wq_data[ResultDetectionConditionText=='Not Detected',.(Result.Unit,MethodDetectionLevelUnit),by=Parameter]
@@ -559,9 +560,9 @@ if(nrow(tmp)>0) cat('STOP - Some value and MDL units do not match. Manually adju
 wq_data[ResultDetectionConditionText=='Not Detected' & is.na(Result.Value),Result.Value:=MethodDetectionLevel/2]
 
 # Remove value=NA
-sum(is.na(wq_data$Result.Value)) # 1746
+sum(is.na(wq_data$Result.Value)) # 1813
 wq_data=wq_data[!is.na(Result.Value),]
-dim(wq_data) # 46198 xx
+dim(wq_data) # 80323 43
 
 
 
@@ -612,7 +613,7 @@ tmp1
 # Remove value=NA
 sum(is.na(wq_data$Result.Value)) # 0
 wq_data=wq_data[!is.na(Result.Value),]
-dim(wq_data) # 46198 xx
+dim(wq_data) # 80323 43
 
 
 
@@ -648,11 +649,11 @@ dim(wq_data) # 46198 xx
 
 # Extract TN and TP
 np_flat=copy(wq_data[Parameter %in% c('Nitrogen','Phosphate-phosphorus'),])
-dim(np_flat) # 2735 xx
+dim(np_flat) # 3854 43
 
 # Pivot & Aggregate to account for any duplicates
 np_mat=dcast(np_flat,MonitoringLocationIdentifier+Date+Fraction+Depth~Parameter,value.var='Result.Value',fun.aggregate=mean,fill=NA)
-dim(np_mat) # 1843 xx
+dim(np_mat) # 2383 6
 
 # Calculate N:P ratios
 np_mat[,NP_mass:=Nitrogen/`Phosphate-phosphorus`]
@@ -664,7 +665,7 @@ np_mat[,`Phosphate-phosphorus`:=NULL]
 
 # Unpivot
 np_flat=melt(np_mat,measure.vars=c('NP_mass','NP_mol'),variable.factor=F,na.rm=T,variable.name='Parameter',value.name='Result.Value')
-dim(np_flat) # 1736 xx
+dim(np_flat) # 2816 6
 
 # Rename values
 np_flat[Parameter=='NP_mass',Parameter:='N:P ratio (mass)']
@@ -673,7 +674,7 @@ np_flat[Parameter=='NP_mol',Parameter:='N:P ratio (molar)']
 # Append N:P ratios back to wq_data
 wq_data=rbindlist(list(wq_data,np_flat),use.names=T,fill=T)
 rm(np_flat,np_mat)
-dim(wq_data) # 47934 xx
+dim(wq_data) # 83139 xx
 
 
 
@@ -687,15 +688,15 @@ dim(wq_data) # 47934 xx
 # Subset Trophic Dataset
 trophic_data=copy(wq_data)
 trophic_data=trophic_data[Fraction=='Total' & Depth=='Surface' & Parameter %in% c('Chlorophyll a','Phosphate-phosphorus'),]
-dim(trophic_data) # 2010 xx
+dim(trophic_data) # 2169 43
 
 # Filter for Secchi data (Depth & Fraction already equal = N/A)
 tmp=copy(wq_data[Parameter=='Depth, Secchi disk depth',])
-dim(tmp) # 2561 xx
+dim(tmp) # 2953 43
 
 # Append Secchi to Chla and TP data
 trophic_data=rbindlist(list(trophic_data,tmp),use.names=T,fill=T)
-dim(trophic_data) # 4571 xx
+dim(trophic_data) # 5122 43
 
 # Check for values=0 (affects TSI log calculations)
 trophic_data[Result.Value==0,sort(unique(Parameter))] # Depth, Secchi disk depth
@@ -718,11 +719,11 @@ trophic_data[Result.Value==0 & Parameter=='Depth, Secchi disk depth',
 
 # Pivot
 trophic_data=dcast(trophic_data,MonitoringLocationIdentifier+Date~Parameter,value.var='Result.Value',fun.aggregate=mean,fill=NA)
-dim(trophic_data) # 825 xx
+dim(trophic_data) # 970 5
 
 # Calculate TSI
 tmp=calcTSI(setDF(trophic_data),chl='Chlorophyll a',TP='Phosphate-phosphorus',SD='Depth, Secchi disk depth')
-dim(tmp) # 825 xx
+dim(tmp) # 970 3
 
 # Join TSI
 trophic_data=cbind(trophic_data,tmp)
@@ -767,14 +768,22 @@ wq_data[,Month:=month(Date)]
 # Join Sites
 intersect(names(wq_data),names(sites)) # MonitoringLocationIdentifier
 wq_data=merge(wq_data,sites,by='MonitoringLocationIdentifier',all.x=T) # Left outer join
-dim(wq_data) # 47934 xx
+dim(wq_data) # 83139 50
 
 # Sort
 setorder(wq_data,Monitoring.Location.ID,Date,Depth,Fraction,Parameter)
 
 
+###################################*
+#### **** Sonde Data **** ####
+###################################*
 
-
+sonde_data_mean <- read.csv('./Data/BuoyData_Wide_Mean.csv')
+sonde_data_max <- read.csv('./Data/BuoyData_Wide_Max.csv')
+sonde_data_min <- read.csv('./Data/BuoyData_Wide_Min.csv')
+sonde_data_mean$date <- as.Date(sonde_data_mean$date)
+sonde_data_max$date <- as.Date(sonde_data_max$date)
+sonde_data_min$date <- as.Date(sonde_data_min$date)
 
 ###################################*
 #### **** Save Processed Datasets **** ####
@@ -787,7 +796,9 @@ save(nla_data,file='../Shiny/RDataFiles/nla_data.RData')
 save(phyto_data,file='../Shiny/RDataFiles/phyto_data.RData')
 save(trophic_data,file='../Shiny/RDataFiles/trophic_data.RData')
 save(wq_data,file='../Shiny/RDataFiles/wq_data.RData')
-
+save(sonde_data_mean,file='../Shiny/RDataFiles/sonde_data_mean.RData')
+save(sonde_data_max,file='../Shiny/RDataFiles/sonde_data_max.RData')
+save(sonde_data_min,file='../Shiny/RDataFiles/sonde_data_min.RData')
 
 
 
