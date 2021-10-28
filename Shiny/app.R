@@ -1412,13 +1412,12 @@ server <- function(input, output){
 		}
 		
 		if(dim(reactive_objects$phyto_plot_data)[1]>0){
-			phyto_map=leaflet(phyto_points) %>%
-				addTiles() %>%
+			phyto_map=leaflet() %>%
 				addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>%
 				addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
-				addPolygons(data=ul_poly,smoothFactor=2,fillOpacity = 0,weight=3,color="lightskyblue") %>%
-				addFeatures(phyto_points,color="orange",radius=phyto_points$radius, stroke=F,fillOpacity=0.5) %>%
-				addFeatures(phyto_points,color="orange",stroke=F,fillOpacity=0,
+				#addPolygons(data=ul_poly,smoothFactor=2,fillOpacity = 0,weight=3,color="lightskyblue") %>%
+				addCircleMarkers(data=phyto_points,color="orange",radius=phyto_points$radius, stroke=F,fillOpacity=0.5) %>%
+				addCircleMarkers(data=phyto_points,color="orange",stroke=F,fillOpacity=0,
 					popup = paste0(
 						"MLID: ", phyto_points$Monitoring.Location.ID,
 						"<br> Value: ", signif(phyto_points$z_val,2))
@@ -1432,10 +1431,9 @@ server <- function(input, output){
 					options = layersControlOptions(collapsed = FALSE, autoZIndex=FALSE))
 		}else{
 			phyto_map=leaflet() %>%
-				addTiles() %>%
 				addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>%
 				addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
-				addPolygons(data=ul_poly,smoothFactor=2,fillOpacity = 0,weight=3,color="lightskyblue") %>%
+				#addPolygons(data=ul_poly,smoothFactor=2,fillOpacity = 0,weight=3,color="lightskyblue") %>%
 				addLayersControl(
 					position ="topleft",
 					baseGroups = c("Topo","Satellite"),
