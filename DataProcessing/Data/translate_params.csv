@@ -235,12 +235,18 @@ Heptachlor epoxide,Total,,Heptachlor epoxide,Total,
 Hydroxide,Total,Bottom,Hydroxide,Total,Bottom
 Hydroxide,Total,Surface,Hydroxide,Total,Surface
 Hydroxide,Total,,Hydroxide,Total,
-Inorganic nitrogen (nitrate and nitrite),Dissolved,Bottom,Inorganic nitrogen (nitrate and nitrite),Dissolved,Bottom
-Inorganic nitrogen (nitrate and nitrite),Dissolved,Surface,Inorganic nitrogen (nitrate and nitrite),Dissolved,Surface
-Inorganic nitrogen (nitrate and nitrite),Dissolved,,Inorganic nitrogen (nitrate and nitrite),Dissolved,
-Inorganic nitrogen (nitrate and nitrite),Total,Bottom,Inorganic nitrogen (nitrate and nitrite),Total,Bottom
-Inorganic nitrogen (nitrate and nitrite),Total,Surface,Inorganic nitrogen (nitrate and nitrite),Total,Surface
-Inorganic nitrogen (nitrate and nitrite),Total,,Inorganic nitrogen (nitrate and nitrite),Total,
+Nitrate + Nitrite,Dissolved,Bottom,Nitrate + Nitrite,Dissolved,Bottom
+Nitrate + Nitrite,Dissolved,Surface,Nitrate + Nitrite,Dissolved,Surface
+Nitrate + Nitrite,Dissolved,,Nitrate + Nitrite,Dissolved,
+Nitrate + Nitrite,Total,Bottom,Nitrate + Nitrite,Total,Bottom
+Nitrate + Nitrite,Total,Surface,Nitrate + Nitrite,Total,Surface
+Nitrate + Nitrite,Total,,Nitrate + Nitrite,Total,
+Inorganic nitrogen (nitrate and nitrite) ***retired***use Nitrate + Nitrite,Dissolved,Bottom,Nitrate + Nitrite,Dissolved,Bottom
+Inorganic nitrogen (nitrate and nitrite) ***retired***use Nitrate + Nitrite,Dissolved,Surface,Nitrate + Nitrite,Dissolved,Surface
+Inorganic nitrogen (nitrate and nitrite) ***retired***use Nitrate + Nitrite,Dissolved,,Nitrate + Nitrite,Dissolved,
+Inorganic nitrogen (nitrate and nitrite) ***retired***use Nitrate + Nitrite,Total,Bottom,Nitrate + Nitrite,Total,Bottom
+Inorganic nitrogen (nitrate and nitrite) ***retired***use Nitrate + Nitrite,Total,Surface,Nitrate + Nitrite,Total,Surface
+Inorganic nitrogen (nitrate and nitrite) ***retired***use Nitrate + Nitrite,Total,,Nitrate + Nitrite,Total,
 Iron,Acid Soluble,Bottom,Iron,Total,Bottom
 Iron,Acid Soluble,Surface,Iron,Total,Surface
 Iron,Acid Soluble,,Iron,Total,
@@ -361,12 +367,18 @@ pH,,,pH,N/A,
 Pheophytin a,Total,Bottom,Pheophytin a,Total,Bottom
 Pheophytin a,Total,Surface,Pheophytin a,Total,Surface
 Pheophytin a,Total,,Pheophytin a,Total,
-Phosphate-phosphorus,Dissolved,Bottom,Phosphate-phosphorus,Dissolved,Bottom
-Phosphate-phosphorus,Dissolved,Surface,Phosphate-phosphorus,Dissolved,Surface
-Phosphate-phosphorus,Dissolved,,Phosphate-phosphorus,Dissolved,
-Phosphate-phosphorus,Total,Bottom,Phosphate-phosphorus,Total,Bottom
-Phosphate-phosphorus,Total,Surface,Phosphate-phosphorus,Total,Surface
-Phosphate-phosphorus,Total,,Phosphate-phosphorus,Total,
+"Total Phosphorus, mixed forms",Dissolved,Bottom,Phosphate-phosphorus,Dissolved,Bottom
+"Total Phosphorus, mixed forms",Dissolved,Surface,Phosphate-phosphorus,Dissolved,Surface
+"Total Phosphorus, mixed forms",Dissolved,,Phosphate-phosphorus,Dissolved,
+"Total Phosphorus, mixed forms",Total,Bottom,Phosphate-phosphorus,Total,Bottom
+"Total Phosphorus, mixed forms",Total,Surface,Phosphate-phosphorus,Total,Surface
+"Total Phosphorus, mixed forms",Total,,Phosphate-phosphorus,Total,
+"Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms",Dissolved,Bottom,Phosphate-phosphorus,Dissolved,Bottom
+"Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms",Dissolved,Surface,Phosphate-phosphorus,Dissolved,Surface
+"Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms",Dissolved,,Phosphate-phosphorus,Dissolved,
+"Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms",Total,Bottom,Phosphate-phosphorus,Total,Bottom
+"Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms",Total,Surface,Phosphate-phosphorus,Total,Surface
+"Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms",Total,,Phosphate-phosphorus,Total,
 PO4-P,,Bottom,PO4-P,,Bottom
 PO4-P,,Surface,PO4-P,,Surface
 PO4-P,,,PO4-P,,

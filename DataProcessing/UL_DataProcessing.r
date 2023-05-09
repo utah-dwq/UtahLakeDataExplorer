@@ -159,7 +159,7 @@ setorder(storageElev,Elevation_ft)
 
 # Source file is "ULDB_Lake_Elevation_All.xlsx", "UL Elevation_Avg Monthly" tab.
 # This dataset is dynamic.
-# Most recent value is Dec 2020
+# Most recent value is Dec 2022
 
 # Create Month LUT
 monthLUT=data.table(Month=1:12,MonthName=month.abb,MonthLab=toupper(month.abb))
@@ -402,7 +402,7 @@ setorder(translate_params,Parameter,Fraction,Depth)
 
 # WQP data were pulled and pre-processed in "/R_WQP/WQP_DataPull.r"
 # Load pre-processed data
-wq_data <- read.csv('WQP/ul_data_wqp_processed_2021-10-21.csv')
+wq_data <- read.csv('WQP/ul_data_wqp_processed_2023-05-09.csv')
 # load('WQP/ul_data.RData')
 dim(wq_data) # 100080 43
 
@@ -459,9 +459,9 @@ wq_data[,.N,by=RelativeDepth]
 
 #### Join translate_params
 # Rename fields
-setnames(wq_data,'aaa','CharacteristicName')
-setnames(wq_data,'aaa','ResultSampleFractionText')
-setnames(wq_data,'aaa','RelativeDepth')
+#setnames(wq_data,'aaa','CharacteristicName')
+#setnames(wq_data,'aaa','ResultSampleFractionText')
+#setnames(wq_data,'aaa','RelativeDepth')
 
 # Join translate_params to data xxx
 intersect(names(wq_data),names(translate_params)) # RelativeDepth" "CharacteristicName" "ResultSampleFractionText"
@@ -502,17 +502,17 @@ if(nrow(tmp)>0) cat('STOP - Multiple units are present. Manually adjust code bel
 
 # Standardize units - Manually update code as needed
 wq_data[Parameter=='Barium',.N,by=Result.Unit]
-wq_data[Parameter=='Barium' & Result.Unit=='mg/l',':='(Result.Unit='ug/l',Result.Value=Result.Value*1000)]
+wq_data[Parameter=='Barium' & Result.Unit=='mg/L',':='(Result.Unit='ug/L',Result.Value=Result.Value*1000)]
 wq_data[Parameter=='Chlorophyll a',.N,by=Result.Unit]
-wq_data[Parameter=='Chlorophyll a' & Result.Unit=='mg',':='(Result.Unit='ug/l',Result.Value=NA)]
+wq_data[Parameter=='Chlorophyll a' & Result.Unit=='mg',':='(Result.Unit='ug/L',Result.Value=NA)]
 wq_data[Parameter=='Depth, Secchi disk depth',.N,by=Result.Unit]
 wq_data[Parameter=='Depth, Secchi disk depth' & Result.Unit=='cm',':='(Result.Unit='m',Result.Value=Result.Value/100)]
 wq_data[Parameter=='Iron',.N,by=Result.Unit]
-wq_data[Parameter=='Iron' & Result.Unit=='mg/l',':='(Result.Unit='ug/l',Result.Value=Result.Value*1000)]
+wq_data[Parameter=='Iron' & Result.Unit=='mg/L',':='(Result.Unit='ug/L',Result.Value=Result.Value*1000)]
 wq_data[Parameter=='Salinity',.N,by=Result.Unit]
 wq_data[Parameter=='Salinity' & Result.Unit=='ppth',Result.Unit:='ppt']
 wq_data[Parameter=='Total Coliform',.N,by=Result.Unit]
-wq_data[Parameter=='Total Coliform' & Result.Unit=='#/100ml',Result.Unit:='MPN/100ml']
+wq_data[Parameter=='Total Coliform' & Result.Unit=='#/100mL',Result.Unit:='MPN/100mL']
 
 # Check for multiple units
 tmp=wq_data[,1,by=.(Parameter,Result.Unit)]
@@ -712,8 +712,8 @@ tmp
 # Set zero values to "minimum/2"
 trophic_data[Result.Value==0 & Parameter=='Chlorophyll a',
 						 Result.Value:=tmp[Parameter=='Chlorophyll a',V1/2]]
-trophic_data[Result.Value==0 & Parameter=='Phosphate-phosphorus ',
-						 Result.Value:=tmp[Parameter=='Phosphate-phosphorus ',V1/2]]
+trophic_data[Result.Value==0 & Parameter=='Phosphate-phosphorus',
+						 Result.Value:=tmp[Parameter=='Phosphate-phosphorus',V1/2]]
 trophic_data[Result.Value==0 & Parameter=='Depth, Secchi disk depth',
 						 Result.Value:=tmp[Parameter=='Depth, Secchi disk depth',V1/2]]
 
