@@ -147,7 +147,9 @@ ui <- fluidPage(
 		tabPanel("Sonde data", value=7), 
 		tabPanel("Wind and turbidity", value=8), 
 		tabPanel("Macrophytes and turbidity", value=9),
-		tabPanel("Water clarity", value=10)
+		tabPanel("Water clarity", value=10)#,
+		#tabPanel("Capacity curves", value=11)
+		
 	),
 
 		
@@ -354,7 +356,7 @@ ui <- fluidPage(
 			           Data were collected in 15-minute intervals and averaged into daily values."),
 			  sliderInput(inputId="sonde_data_plot_months","Month range:",
 			              min=4,max=11,
-			              value=c(1, 12),sep="", step=1),
+			              value=c(4, 11),sep="", step=1),
 			  sliderInput(inputId="sonde_data_plot_years","Year range:",
 			              min=2016,max=2020,
 			              value=c(2016, 2020),sep="", step=1),
@@ -427,6 +429,16 @@ ui <- fluidPage(
 			               choiceNames=c("On","Off"),
 			               choiceValues=c(1,0),selected=0,inline=TRUE),
 			),
+
+
+			## Capacity curves tab:
+			#conditionalPanel(
+			#  condition="input.tabs==11",
+			#  tagList("This tool converts elevation gage readings to surface area and volume measurements."),
+			#  radioButtons("capacity_analysis_type","Analysis type:",choiceNames=c("Time series", "Capacity calculator", "Capacity curves"),choiceValues=c(1,2,3),selected=1)
+			#  
+			#
+			#),
 			
 			###Help text
 			br(),
@@ -546,7 +558,12 @@ ui <- fluidPage(
 			  plotOutput("PAR_data_plot", width="800px", height="600px"),
 			  plotOutput("clarity_data_plot",  width="400px", height="400px")
 
-			)
+			)#,
+			
+			#conditionalPanel(
+			#  condition = "input.tabs == 11 & input.capacity_analysis_type == 1"#,
+			#  #plotOutput()
+			#)
 
 		)
 		
