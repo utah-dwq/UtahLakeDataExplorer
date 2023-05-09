@@ -354,7 +354,7 @@ ui <- fluidPage(
 			           Data were collected in 15-minute intervals and averaged into daily values."),
 			  sliderInput(inputId="sonde_data_plot_months","Month range:",
 			              min=4,max=11,
-			              value=c(1, 12),sep="", step=1),
+			              value=c(4, 11),sep="", step=1),
 			  sliderInput(inputId="sonde_data_plot_years","Year range:",
 			              min=2016,max=2020,
 			              value=c(2016, 2020),sep="", step=1),
