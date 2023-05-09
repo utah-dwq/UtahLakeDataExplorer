@@ -166,7 +166,7 @@ monthLUT=data.table(Month=1:12,MonthName=month.abb,MonthLab=toupper(month.abb))
 
 # Load data
 lake_elev_data=fread('Data/UL_Elevation_Avg_Monthly.csv',sep=',',header=T,skip=0,check.names=T,na.strings=na.strings)
-dim(lake_elev_data) # 1068 4
+dim(lake_elev_data) # 1092 4
 
 # Add Month
 intersect(names(lake_elev_data),names(monthLUT)) # MonthLab
